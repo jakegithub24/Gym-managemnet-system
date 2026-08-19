@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, Users, DollarSign, Activity,
   AlertTriangle, UserPlus, CreditCard, CalendarCheck, Dumbbell,
-  ArrowUpRight, MoreHorizontal
+  ArrowUpRight, Shield, Briefcase
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -95,6 +96,10 @@ function QuickActions() {
 }
 
 export default function DashboardHome() {
+  const { currentUser, ROLE_CONFIG } = useAuth();
+  const role = currentUser?.role || 'staff';
+  const roleConfig = ROLE_CONFIG[role];
+
   const [payPage, setPayPage] = useState(1);
   const PER_PAGE = 5;
   const totalPages = Math.ceil(recentPayments.length / PER_PAGE);
@@ -112,8 +117,17 @@ export default function DashboardHome() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-white">Dashboard Overview</h1>
-          <p className="text-gray-500 text-sm mt-0.5">Wednesday, August 19, 2026</p>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-black text-white">
+              Welcome back, {currentUser?.name?.split(' ')[0]} 👋
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 text-sm">Thursday, August 20, 2026</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full border" style={{ background: `${roleConfig?.color}12`, borderColor: `${roleConfig?.color}30`, color: roleConfig?.color }}>
+              {roleConfig?.label}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <select className="bg-gray-900 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-gray-500">

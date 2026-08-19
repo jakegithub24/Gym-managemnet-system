@@ -128,6 +128,12 @@ function Hero() {
               <Play size={16} className="fill-current" />
               View Demo
             </Link>
+            <Link
+              to="/enquiry"
+              className="inline-flex items-center gap-2 border border-[#00D4FF]/40 text-[#00D4FF] font-semibold px-8 py-4 rounded-xl text-base hover:bg-[#00D4FF]/10 transition-all"
+            >
+              Member Enquiry
+            </Link>
           </div>
 
           {/* Stats */}
