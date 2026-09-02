@@ -14,15 +14,11 @@ import DashboardLayout      from './layouts/DashboardLayout';
 import DashboardHome        from './pages/dashboard/DashboardHome';
 import Members              from './pages/dashboard/Members';
 import MembershipPlans      from './pages/dashboard/MembershipPlans';
-import Attendance           from './pages/dashboard/Attendance';
 import Trainers             from './pages/dashboard/Trainers';
 import Notifications        from './pages/dashboard/Notifications';
 import Reports              from './pages/dashboard/Reports';
 import Enquiries            from './pages/dashboard/Enquiries';
 import ProfileSettings      from './pages/dashboard/ProfileSettings';
-import EquipmentManagement  from './pages/dashboard/EquipmentManagement';
-import Products             from './pages/dashboard/Products';
-import Offers               from './pages/dashboard/Offers';
 import Analytics            from './pages/dashboard/Analytics';
 
 // ── Member portal ─────────────────────────────────────────────────────────────
@@ -31,9 +27,7 @@ import MemberHome         from './pages/member/MemberHome';
 import MemberProfile      from './pages/member/MemberProfile';
 import MemberSchedule     from './pages/member/MemberSchedule';
 import MemberPayments     from './pages/member/MemberPayments';
-import MemberProgress     from './pages/member/MemberProgress';
 import MemberNotifications from './pages/member/MemberNotifications';
-import MemberShop         from './pages/member/MemberShop';
 import AICoach            from './pages/member/AICoach';
 
 const STAFF_ROLES = ['master_admin', 'trainer', 'staff', 'receptionist'];
@@ -62,15 +56,11 @@ function App() {
             <Route index                   element={<DashboardHome />} />
             <Route path="members"          element={<Members />} />
             <Route path="plans"            element={<MembershipPlans />} />
-            <Route path="attendance"       element={<Attendance />} />
             <Route path="trainers"         element={<Trainers />} />
             <Route path="notifications"    element={<Notifications />} />
             <Route path="reports"          element={<Reports />} />
             <Route path="enquiries"        element={<Enquiries />} />
             <Route path="profile"          element={<ProfileSettings />} />
-            <Route path="equipment"        element={<EquipmentManagement />} />
-            <Route path="products"         element={<Products />} />
-            <Route path="offers"           element={<Offers />} />
             <Route path="analytics"        element={<Analytics />} />
           </Route>
 
@@ -87,9 +77,7 @@ function App() {
             <Route path="profile"         element={<MemberProfile />} />
             <Route path="schedule"        element={<MemberSchedule />} />
             <Route path="payments"        element={<MemberPayments />} />
-            <Route path="progress"        element={<MemberProgress />} />
             <Route path="notifications"   element={<MemberNotifications />} />
-            <Route path="shop"            element={<MemberShop />} />
             <Route path="ai-coach"        element={<AICoach />} />
           </Route>
 

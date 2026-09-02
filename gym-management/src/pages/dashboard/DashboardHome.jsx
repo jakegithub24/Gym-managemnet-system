@@ -12,7 +12,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
-  kpiData, revenueData, attendanceData, membershipDistribution,
+  kpiData, revenueData, membershipDistribution,
   recentPayments, members, trainers, memberCategoryDistribution,
 } from '../../data/sampleData';
 import KpiCard from '../../components/ui/KpiCard';
@@ -141,7 +141,7 @@ function AdminDashboard({ roleConfig }) {
 
       {/* Attendance bar */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-        <h3 className="font-bold text-white mb-1">Weekly Attendance</h3>
+        <h3 className="font-bold text-white mb-1">Gym Overview</h3>
         <p className="text-xs text-gray-500 mb-6">Morning vs Evening check-ins</p>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={attendanceData}>
@@ -215,7 +215,7 @@ function AdminDashboard({ roleConfig }) {
             <div className="grid grid-cols-2 gap-3">
               <ActionBtn label="Add Member"      icon={UserPlus}    color="#39FF14" to="/dashboard/members" />
               <ActionBtn label="Record Payment"  icon={CreditCard}  color="#00D4FF" to="/dashboard/plans" />
-              <ActionBtn label="Equipment"       icon={Wrench}      color="#FF6B00" to="/dashboard/equipment" />
+              <ActionBtn label="Equipment"       icon={Wrench}      color="#FF6B00" to="/dashboard/analytics" />
               <ActionBtn label="Analytics"       icon={TrendingUp}  color="#A855F7" to="/dashboard/analytics" />
             </div>
           </div>
@@ -320,7 +320,7 @@ function TrainerDashboard({ currentUser, roleConfig }) {
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
         <h3 className="text-base font-bold text-white mb-4">Quick Actions</h3>
         <div className="grid grid-cols-3 gap-3">
-          <ActionBtn label="Log Session"      icon={ClipboardList} color="#00D4FF" to="/dashboard/attendance" />
+          <ActionBtn label="Log Session"      icon={ClipboardList} color="#00D4FF" to="/dashboard" />
           <ActionBtn label="View Members"     icon={Users}         color="#39FF14" to="/dashboard/members" />
           <ActionBtn label="Notifications"    icon={MessageSquare} color="#A855F7" to="/dashboard/notifications" />
         </div>
@@ -372,8 +372,8 @@ function StaffDashboard({ roleConfig }) {
             <div className="grid grid-cols-2 gap-3">
               <ActionBtn label="Add Member"    icon={UserPlus}   color="#FF6B00" to="/dashboard/members" />
               <ActionBtn label="Payment"       icon={CreditCard} color="#39FF14" to="/dashboard/plans" />
-              <ActionBtn label="Attendance"    icon={CalendarCheck} color="#00D4FF" to="/dashboard/attendance" />
-              <ActionBtn label="Products"      icon={ShoppingBag}   color="#A855F7" to="/dashboard/products" />
+              <ActionBtn label="Attendance"    icon={CalendarCheck} color="#00D4FF" to="/dashboard" />
+              <ActionBtn label="Products"      icon={ShoppingBag}   color="#A855F7" to="/dashboard/plans" />
             </div>
           </div>
           <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4">
@@ -395,6 +395,30 @@ function ReceptionistDashboard({ roleConfig }) {
   const openEnqs  = enquiries.filter(e => e.status === 'open');
   const followUps = enquiries.filter(e => e.status === 'follow_up_due');
 
+  // Kanban pipeline stages
+  const pipeline = {
+    open:      enquiries.filter(e => e.status === 'open'),
+    contacted: enquiries.filter(e => e.status === 'contacted'),
+    trial:     enquiries.filter(e => e.status === 'scheduled_trial'),
+    converted: enquiries.filter(e => e.status === 'converted'),
+  };
+
+  // Renewal queue with days-to-expiry color coding
+  const today = new Date();
+  const renewalQueue = members
+    .filter(m => m.status === 'Active' || m.status === 'Expiring')
+    .map(m => {
+      const expiry = new Date(m.expiry);
+      const daysLeft = Math.floor((expiry - today) / (1000 * 60 * 60 * 24));
+      let urgency = 'green';
+      if (daysLeft < 3) urgency = 'red';
+      else if (daysLeft < 7) urgency = 'amber';
+      return { ...m, daysLeft, urgency };
+    })
+    .filter(m => m.daysLeft <= 14)
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+    .slice(0, 8);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -404,55 +428,103 @@ function ReceptionistDashboard({ roleConfig }) {
         <KpiCard title="Expiring This Week"   value="47"                                        icon={CreditCard}     color="#00D4FF" subtitle="need renewal" />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        {/* Live enquiry feed */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-white">Live Enquiry Feed</h3>
-            <Link to="/dashboard/enquiries" className="text-xs text-[#A855F7] hover:underline">Manage all</Link>
+      {/* Enquiry Pipeline Kanban */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-white">Enquiry Pipeline</h3>
+          <Link to="/dashboard/enquiries" className="text-xs text-[#A855F7] hover:underline">Manage all</Link>
+        </div>
+        <div className="grid grid-cols-4 gap-3">
+          {[
+            { key: 'open',      label: 'Open',      color: '#A855F7', count: pipeline.open.length },
+            { key: 'contacted', label: 'Contacted', color: '#00D4FF', count: pipeline.contacted.length },
+            { key: 'trial',     label: 'Trial',     color: '#FF6B00', count: pipeline.trial.length },
+            { key: 'converted', label: 'Converted', color: '#39FF14', count: pipeline.converted.length },
+          ].map(stage => (
+            <div key={stage.key} className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-3">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-gray-400 uppercase">{stage.label}</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${stage.color}20`, color: stage.color }}>{stage.count}</span>
+              </div>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {pipeline[stage.key].slice(0, 4).map(enq => (
+                  <div key={enq.id} className="bg-gray-900 border border-gray-700 rounded-lg p-2">
+                    <p className="text-xs font-semibold text-white truncate">{enq.name}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">{enq.via} · {enq.time}</p>
+                  </div>
+                ))}
+                {pipeline[stage.key].length === 0 && (
+                  <p className="text-[10px] text-gray-600 text-center py-4">No enquiries</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Renewal Queue */}
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-white">Renewal Queue</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Members expiring in next 14 days</p>
           </div>
-          <div className="space-y-3 max-h-72 overflow-y-auto">
-            {[...openEnqs, ...followUps].slice(0, 5).map(enq => (
-              <div key={enq.id} className="p-3 rounded-xl bg-gray-800/40 border border-gray-700/50">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-sm font-semibold text-white">{enq.name}</p>
-                  <StatusBadge status={enq.status} />
+          <Link to="/dashboard/members" className="text-xs text-[#00D4FF] hover:underline">View all</Link>
+        </div>
+        <div className="space-y-2">
+          {renewalQueue.map(m => {
+            const urgencyColors = {
+              red:   { bg: 'bg-red-500/10',    border: 'border-red-500/30',    text: 'text-red-400',    badge: 'bg-red-500/20 text-red-400' },
+              amber: { bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', text: 'text-yellow-400', badge: 'bg-yellow-500/20 text-yellow-400' },
+              green: { bg: 'bg-green-500/10',  border: 'border-green-500/30',  text: 'text-green-400',  badge: 'bg-green-500/20 text-green-400' },
+            };
+            const colors = urgencyColors[m.urgency];
+            return (
+              <div key={m.id} className={`flex items-center justify-between p-3 rounded-xl border ${colors.bg} ${colors.border}`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-xs font-bold text-gray-300">{m.avatar}</div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{m.name}</p>
+                    <p className="text-xs text-gray-500">{m.plan} · {m.phone}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-400 line-clamp-2">{enq.message}</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs text-gray-600">{enq.via} · {enq.time}</span>
-                  <Link to="/dashboard/enquiries" className="text-xs font-semibold text-[#A855F7] hover:underline ml-auto">Respond →</Link>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className={`text-xs font-bold ${colors.text}`}>{m.daysLeft} {m.daysLeft === 1 ? 'day' : 'days'} left</p>
+                    <p className="text-xs text-gray-600">Expires {new Date(m.expiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</p>
+                  </div>
+                  <Link to="/dashboard/plans" className="px-3 py-1.5 bg-[#00D4FF] text-gray-950 text-xs font-bold rounded-lg hover:bg-[#00D4FF]/90 transition-all">Renew</Link>
                 </div>
               </div>
-            ))}
-            {[...openEnqs, ...followUps].length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-6">All enquiries responded ✓</p>
-            )}
+            );
+          })}
+          {renewalQueue.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-6">No urgent renewals ✓</p>
+          )}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+          <h3 className="font-bold text-white mb-3">Today's Gym Hours</h3>
+          <div className="flex items-center gap-3 p-3 bg-[#39FF14]/5 border border-[#39FF14]/20 rounded-xl">
+            <div className="w-3 h-3 rounded-full bg-[#39FF14] animate-pulse" />
+            <div>
+              <p className="text-sm font-semibold text-[#39FF14]">Open Today — Friday</p>
+              <p className="text-xs text-gray-400">5:00 AM – 11:00 PM</p>
+            </div>
           </div>
+          <p className="text-xs text-gray-600 mt-2">Saturday: 6 AM – 10 PM &nbsp;|&nbsp; Sunday: 7 AM – 9 PM</p>
         </div>
 
-        <div className="space-y-4">
-          {/* Gym timings */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-            <h3 className="font-bold text-white mb-3">Today's Gym Hours</h3>
-            <div className="flex items-center gap-3 p-3 bg-[#39FF14]/5 border border-[#39FF14]/20 rounded-xl">
-              <div className="w-3 h-3 rounded-full bg-[#39FF14] animate-pulse" />
-              <div>
-                <p className="text-sm font-semibold text-[#39FF14]">Open Today — Friday</p>
-                <p className="text-xs text-gray-400">5:00 AM – 11:00 PM</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600 mt-2">Saturday: 6 AM – 10 PM &nbsp;|&nbsp; Sunday: 7 AM – 9 PM</p>
-          </div>
-
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
-            <h3 className="text-base font-bold text-white mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <ActionBtn label="New Enquiry"    icon={MessageSquare} color="#A855F7" to="/dashboard/enquiries" />
-              <ActionBtn label="Add Member"     icon={UserPlus}      color="#39FF14" to="/dashboard/members" />
-              <ActionBtn label="Renew Plan"     icon={CreditCard}    color="#00D4FF" to="/dashboard/plans" />
-              <ActionBtn label="Products"       icon={ShoppingBag}   color="#FF6B00" to="/dashboard/products" />
-            </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
+          <h3 className="text-base font-bold text-white mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <ActionBtn label="New Enquiry"    icon={MessageSquare} color="#A855F7" to="/dashboard/enquiries" />
+            <ActionBtn label="Add Member"     icon={UserPlus}      color="#39FF14" to="/dashboard/members" />
+            <ActionBtn label="Renew Plan"     icon={CreditCard}    color="#00D4FF" to="/dashboard/plans" />
+            <ActionBtn label="Products"       icon={ShoppingBag}   color="#FF6B00" to="/dashboard/plans" />
           </div>
         </div>
       </div>

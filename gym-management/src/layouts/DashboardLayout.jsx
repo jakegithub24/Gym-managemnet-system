@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, CreditCard, CalendarCheck, Dumbbell,
+  LayoutDashboard, Users, CreditCard, Dumbbell,
   Bell, BarChart3, LogOut, Menu, X, Search, ChevronDown, Zap,
   Shield, UserCheck, Briefcase, HeadphonesIcon, MessageSquare,
   Settings, Wrench, ShoppingBag, Tag, TrendingUp,
@@ -14,18 +14,14 @@ const ALL_NAV = [
   // Core
   { to: '/dashboard',              label: 'Dashboard',       icon: LayoutDashboard, roles: ['master_admin','trainer','staff','receptionist'], end: true,  group: 'Main' },
   { to: '/dashboard/members',      label: 'Members',         icon: Users,           roles: ['master_admin','trainer','staff','receptionist'],            group: 'Main' },
-  { to: '/dashboard/attendance',   label: 'Attendance',      icon: CalendarCheck,   roles: ['master_admin','trainer','staff','receptionist'],            group: 'Main' },
 
   // Finance
   { to: '/dashboard/plans',        label: 'Membership Plans',icon: CreditCard,      roles: ['master_admin','staff','receptionist'],                      group: 'Finance' },
-  { to: '/dashboard/offers',       label: 'Offers & Promos', icon: Tag,             roles: ['master_admin'],                                             group: 'Finance' },
   { to: '/dashboard/analytics',    label: 'Analytics',       icon: TrendingUp,      roles: ['master_admin'],                                             group: 'Finance' },
   { to: '/dashboard/reports',      label: 'Reports',         icon: BarChart3,       roles: ['master_admin'],                                             group: 'Finance' },
 
   // Operations
   { to: '/dashboard/trainers',     label: 'Trainers',        icon: Dumbbell,        roles: ['master_admin'],                                             group: 'Operations' },
-  { to: '/dashboard/equipment',    label: 'Equipment',       icon: Wrench,          roles: ['master_admin','staff'],                                     group: 'Operations' },
-  { to: '/dashboard/products',     label: 'Products / Shop', icon: ShoppingBag,     roles: ['master_admin','staff','receptionist'],                      group: 'Operations' },
   { to: '/dashboard/enquiries',    label: 'Enquiries',       icon: MessageSquare,   roles: ['receptionist','master_admin'],                              group: 'Operations' },
 
   // System

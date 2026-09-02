@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Check, X, Tag, ChevronDown } from 'lucide-react';
 import { membershipPlans, billingCycles, memberCategories, offers } from '../../data/sampleData';
 import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/currency';
 
 const PLAN_COLORS = {
   gray:   { accent: '#6B7280', glow: '#6B728030' },
@@ -24,9 +25,6 @@ function computePrice(baseMonthly, cycle, coupon, allOffers) {
   return { total, discount, final: total - discount };
 }
 
-function formatINR(num) {
-  return `₹${Number(num).toLocaleString('en-IN')}`;
-}
 
 export default function MembershipPlans() {
   const { currentUser } = useAuth();
@@ -152,7 +150,7 @@ export default function MembershipPlans() {
               {/* Pricing block */}
               <div className="mb-5">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-black text-white">{formatINR(baseMonthly)}</span>
+                  <span className="text-3xl font-black text-white">{formatCurrency(baseMonthly)}</span>
                   <span className="text-gray-400 text-sm">/month</span>
                 </div>
                 {activeCycle.id !== 'custom' && pricing && (
@@ -160,12 +158,12 @@ export default function MembershipPlans() {
                     <p className="text-xs text-gray-400">{activeCycle.label} total:</p>
                     {pricing.discount > 0 ? (
                       <>
-                        <p className="text-xs text-gray-500 line-through">{formatINR(pricing.total)}</p>
-                        <p className="text-base font-black" style={{ color: colors.accent }}>{formatINR(pricing.final)}</p>
-                        <p className="text-xs text-[#39FF14]">You save {formatINR(pricing.discount)}</p>
+                        <p className="text-xs text-gray-500 line-through">{formatCurrency(pricing.total)}</p>
+                        <p className="text-base font-black" style={{ color: colors.accent }}>{formatCurrency(pricing.final)}</p>
+                        <p className="text-xs text-[#39FF14]">You save {formatCurrency(pricing.discount)}</p>
                       </>
                     ) : (
-                      <p className="text-base font-black" style={{ color: colors.accent }}>{formatINR(pricing.total)}</p>
+                      <p className="text-base font-black" style={{ color: colors.accent }}>{formatCurrency(pricing.total)}</p>
                     )}
                     {activeCycle.savings && <p className="text-xs text-orange-400 mt-0.5">Save {activeCycle.savings} with this cycle</p>}
                   </div>
@@ -228,7 +226,7 @@ export default function MembershipPlans() {
                     <td className="py-3 font-semibold" style={{ color: colors.accent }}>{plan.name}</td>
                     {billingCycles.filter(c => c.id !== 'custom').map(c => (
                       <td key={c.id} className="py-3 text-right text-gray-300">
-                        {formatINR(Math.round(base * c.multiplier))}
+                        {formatCurrency(Math.round(base * c.multiplier))}
                       </td>
                     ))}
                   </tr>

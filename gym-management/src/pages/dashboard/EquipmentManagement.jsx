@@ -4,7 +4,7 @@ import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import {
   Plus, Search, Filter, Wrench, AlertTriangle, CheckCircle,
-  Tool, Edit3, Trash2, Calendar, MapPin, Package,
+  Edit3, Trash2, Calendar, MapPin, Package,
 } from 'lucide-react';
 
 const CATEGORIES  = ['All', 'Cardio', 'Strength', 'Free Weights', 'Functional', 'Accessories'];

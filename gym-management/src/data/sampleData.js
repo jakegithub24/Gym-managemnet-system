@@ -4,11 +4,9 @@
 export const kpiData = {
   revenue:    { value: '₹4,83,200', change: '+12.5%', positive: true,  label: 'Monthly Revenue'       },
   members:    { value: '1,284',     change: '+8.2%',  positive: true,  label: 'Active Members'        },
-  attendance: { value: '73%',       change: '-2.1%',  positive: false, label: 'Avg Attendance'        },
   expiring:   { value: '47',        change: '+5',     positive: false, label: 'Expiring This Week'    },
   pendingDues:{ value: '₹68,400',   change: '+3',     positive: false, label: 'Pending Dues'          },
   newEnquiries:{ value: '18',       change: '+4',     positive: true,  label: 'New Enquiries'         },
-  productSales:{ value: '₹22,750',  change: '+18%',   positive: true,  label: 'Product Sales'         },
   equipment:  { value: '42',        change: '3 due',  positive: false, label: 'Equipment Items'       },
 };
 
@@ -24,18 +22,17 @@ export const revenueData = [
   { month: 'Aug', revenue: 483200, members: 1284, ladies: 524, mens: 760 },
 ];
 
-// ── Attendance Data ───────────────────────────────────────────────────────────
+// ── Membership Distribution ───────────────────────────────────────────────────
 export const attendanceData = [
-  { day: 'Mon', morning: 120, evening: 180, total: 300 },
-  { day: 'Tue', morning: 100, evening: 160, total: 260 },
-  { day: 'Wed', morning: 140, evening: 200, total: 340 },
-  { day: 'Thu', morning: 110, evening: 170, total: 280 },
-  { day: 'Fri', morning: 160, evening: 220, total: 380 },
-  { day: 'Sat', morning: 200, evening: 150, total: 350 },
-  { day: 'Sun', morning: 90,  evening: 80,  total: 170 },
+  { day: 'Mon', total: 240 },
+  { day: 'Tue', total: 260 },
+  { day: 'Wed', total: 280 },
+  { day: 'Thu', total: 250 },
+  { day: 'Fri', total: 300 },
+  { day: 'Sat', total: 220 },
+  { day: 'Sun', total: 180 },
 ];
 
-// ── Membership Distribution ───────────────────────────────────────────────────
 export const membershipDistribution = [
   { name: 'Basic',    value: 35, color: '#6B7280' },
   { name: 'Standard', value: 40, color: '#00D4FF' },
@@ -167,19 +164,7 @@ export const trainers = [
   },
 ];
 
-// ── Attendance Log ────────────────────────────────────────────────────────────
-export const attendanceLog = [
-  { id: 1,  member: 'Priya Sharma',   date: '2026-08-21', checkIn: '06:15', checkOut: '07:45', duration: '1h 30m', area: 'Weight Room'  },
-  { id: 2,  member: 'Vikram Singh',   date: '2026-08-21', checkIn: '07:00', checkOut: '08:30', duration: '1h 30m', area: 'Cardio Zone'  },
-  { id: 3,  member: 'Deepa Krishnan', date: '2026-08-21', checkIn: '08:20', checkOut: '09:20', duration: '1h 00m', area: 'Yoga Studio'  },
-  { id: 4,  member: 'Meera Nair',     date: '2026-08-21', checkIn: '09:00', checkOut: '10:15', duration: '1h 15m', area: 'Weight Room'  },
-  { id: 5,  member: 'Rahul Mehta',    date: '2026-08-21', checkIn: '17:30', checkOut: '19:00', duration: '1h 30m', area: 'Group Class'  },
-  { id: 6,  member: 'Arjun Kapoor',   date: '2026-08-21', checkIn: '18:00', checkOut: '19:30', duration: '1h 30m', area: 'Weight Room'  },
-  { id: 7,  member: 'Suresh Babu',    date: '2026-08-20', checkIn: '06:30', checkOut: '08:00', duration: '1h 30m', area: 'Cardio Zone'  },
-  { id: 8,  member: 'Ravi Kumar',     date: '2026-08-20', checkIn: '09:15', checkOut: '10:45', duration: '1h 30m', area: 'Yoga Studio'  },
-  { id: 9,  member: 'Lakshmi Devi',   date: '2026-08-20', checkIn: '10:00', checkOut: '11:00', duration: '1h 00m', area: 'Cardio Zone'  },
-  { id: 10, member: 'Kiran Patel',    date: '2026-08-20', checkIn: '17:00', checkOut: '18:30', duration: '1h 30m', area: 'Weight Room'  },
-];
+
 
 // ── Membership Plans ──────────────────────────────────────────────────────────
 // Price is the base MONTHLY price per category (Ladies / Mens / Mixed)
@@ -241,28 +226,18 @@ export const equipment = [
 
 // ── Products / Shop ───────────────────────────────────────────────────────────
 export const products = [
-  { id: 'PRD-001', name: 'Whey Protein Isolate (1 kg)',  category: 'Supplements',  price: 2499, stock: 24, sku: 'WPI-1K',  image: '🥛', description: 'Premium whey isolate, 26g protein per scoop. Chocolate & Vanilla flavours.' },
-  { id: 'PRD-002', name: 'Creatine Monohydrate (300 g)', category: 'Supplements',  price: 699,  stock: 18, sku: 'CRT-300', image: '💊', description: 'Micronised creatine monohydrate. Unflavoured. 60 servings.' },
-  { id: 'PRD-003', name: 'Pre-Workout Energizer (250 g)',category: 'Supplements',  price: 999,  stock: 12, sku: 'PRE-250', image: '⚡', description: 'Caffeine + beta-alanine blend for explosive energy. Watermelon flavour.' },
-  { id: 'PRD-004', name: 'BCAA Powder (200 g)',          category: 'Supplements',  price: 799,  stock: 15, sku: 'BCA-200', image: '💪', description: 'Branched chain amino acids 2:1:1 ratio. Fruit punch flavour.' },
-  { id: 'PRD-005', name: 'Gym Gloves (M/L/XL)',         category: 'Accessories',  price: 349,  stock: 30, sku: 'GLV-UNI', image: '🥊', description: 'Anti-slip leather palm grip gloves. Wrist support included.' },
-  { id: 'PRD-006', name: 'Weightlifting Belt (M/L)',     category: 'Accessories',  price: 899,  stock: 8,  sku: 'BLT-UNI', image: '🔒', description: 'Genuine leather, 4-inch wide lumbar support belt.' },
-  { id: 'PRD-007', name: 'Resistance Bands Set (5 pcs)',  category: 'Accessories',  price: 549,  stock: 20, sku: 'RBN-5PC', image: '🎯', description: 'Loop bands in 5 resistance levels. Perfect for rehab & warm-up.' },
-  { id: 'PRD-008', name: 'Shaker Bottle (700 ml)',        category: 'Hydration',    price: 299,  stock: 40, sku: 'SHK-700', image: '🍶', description: 'BPA-free with mixing ball. Leak-proof lid. Multiple colours.' },
-  { id: 'PRD-009', name: 'Stainless Steel Bottle (1 L)', category: 'Hydration',    price: 599,  stock: 25, sku: 'STL-1L',  image: '🫙', description: 'Insulated stainless steel. Keeps cold 24h / hot 12h.' },
-  { id: 'PRD-010', name: 'GymForce T-Shirt',             category: 'Apparel',      price: 499,  stock: 50, sku: 'TSH-GYM', image: '👕', description: 'Dry-fit performance tee. GymForce logo. S/M/L/XL/XXL.' },
-  { id: 'PRD-011', name: 'Compression Shorts',           category: 'Apparel',      price: 649,  stock: 22, sku: 'CMP-SHT', image: '🩳', description: '4-way stretch compression shorts. Available in Black & Navy.' },
-  { id: 'PRD-012', name: 'Yoga Mat Premium (6 mm)',      category: 'Accessories',  price: 1299, stock: 10, sku: 'YGM-6MM', image: '🧘', description: 'Non-slip TPE yoga mat with carrying strap. 183 × 61 cm.' },
-];
-
-// ── Product Sales History ─────────────────────────────────────────────────────
-export const productSales = [
-  { id: 'SAL-001', product: 'Whey Protein Isolate (1 kg)', member: 'Vikram Singh',   amount: '₹2,499', date: '2026-08-20', qty: 1, method: 'UPI'  },
-  { id: 'SAL-002', product: 'Gym Gloves (M/L/XL)',        member: 'Arjun Kapoor',   amount: '₹349',   date: '2026-08-20', qty: 1, method: 'Cash' },
-  { id: 'SAL-003', product: 'Shaker Bottle (700 ml)',      member: 'Priya Sharma',   amount: '₹299',   date: '2026-08-19', qty: 1, method: 'Card' },
-  { id: 'SAL-004', product: 'BCAA Powder (200 g)',         member: 'Rahul Mehta',    amount: '₹799',   date: '2026-08-18', qty: 1, method: 'UPI'  },
-  { id: 'SAL-005', product: 'Pre-Workout Energizer',       member: 'Kiran Patel',    amount: '₹999',   date: '2026-08-17', qty: 1, method: 'Cash' },
-  { id: 'SAL-006', product: 'Resistance Bands Set',        member: 'Deepa Krishnan', amount: '₹549',   date: '2026-08-16', qty: 1, method: 'UPI'  },
+  { id: 'PRD-001', name: 'Whey Protein Isolate (1 kg)', category: 'Supplements', price: 2499, stock: 24, sku: 'WPI-1KG', emoji: '🥛', description: 'High-quality whey isolate. 25g protein per serving. Chocolate & vanilla flavors.', status: 'In Stock' },
+  { id: 'PRD-002', name: 'Creatine Monohydrate (300 g)', category: 'Supplements', price: 799,  stock: 18, sku: 'CRE-300', emoji: '💊', description: 'Pure micronised creatine monohydrate. Unflavored. 60 servings.', status: 'In Stock' },
+  { id: 'PRD-003', name: 'BCAA Recovery Drink (400 g)', category: 'Supplements', price: 1099, stock: 4,  sku: 'BCAA-400', emoji: '🧃', description: '2:1:1 BCAA ratio with electrolytes. Watermelon flavor.', status: 'Low Stock' },
+  { id: 'PRD-004', name: 'Pre-Workout Boost (250 g)',   category: 'Supplements', price: 1399, stock: 11, sku: 'PRE-250', emoji: '⚡', description: 'Caffeine + beta-alanine blend for energy and endurance. Fruit punch flavor.', status: 'In Stock' },
+  { id: 'PRD-005', name: 'Yoga Mat Premium (6 mm)',     category: 'Equipment',   price: 999,  stock: 8,  sku: 'YM-6MM',  emoji: '🧘', description: 'Non-slip TPE yoga mat. 183 cm × 61 cm. Carry strap included. Multiple colors.', status: 'In Stock' },
+  { id: 'PRD-006', name: 'Resistance Bands Set',        category: 'Equipment',   price: 599,  stock: 15, sku: 'RBD-SET', emoji: '🎀', description: '5 resistance levels (10–50 lbs). Latex-free. Includes carry bag.', status: 'In Stock' },
+  { id: 'PRD-007', name: 'Gym Gloves (Pair)',           category: 'Accessories', price: 349,  stock: 22, sku: 'GGL-PR',  emoji: '🧤', description: 'Half-finger weightlifting gloves with wrist wrap. S/M/L sizes.', status: 'In Stock' },
+  { id: 'PRD-008', name: 'Shaker Bottle (700 ml)',      category: 'Accessories', price: 249,  stock: 3,  sku: 'SHK-700', emoji: '🫙', description: 'BPA-free shaker with wire whisk ball. Leak-proof lid.', status: 'Low Stock' },
+  { id: 'PRD-009', name: 'Gym Bag (25 L)',              category: 'Accessories', price: 1299, stock: 7,  sku: 'GBG-25L', emoji: '🎒', description: 'Durable polyester gym bag with shoe compartment and wet pocket.', status: 'In Stock' },
+  { id: 'PRD-010', name: 'GymForce T-Shirt',           category: 'Apparel',     price: 499,  stock: 30, sku: 'GFT-TSH', emoji: '👕', description: 'Moisture-wicking dry-fit tee with GymForce logo. S/M/L/XL.', status: 'In Stock' },
+  { id: 'PRD-011', name: 'Compression Shorts',          category: 'Apparel',     price: 699,  stock: 0,  sku: 'CMP-SHT', emoji: '🩳', description: 'Anti-chafe compression shorts. 4-way stretch. Black.', status: 'Out of Stock' },
+  { id: 'PRD-012', name: 'Foam Roller (90 cm)',         category: 'Recovery',    price: 899,  stock: 6,  sku: 'FRM-90',  emoji: '🫧', description: 'High-density EVA foam roller for myofascial release and recovery.', status: 'In Stock' },
 ];
 
 // ── Offers & Promotions ───────────────────────────────────────────────────────
@@ -377,14 +352,8 @@ export const trainerWorkload = [
 ];
 
 // ── Top-Selling Products (for analytics) ─────────────────────────────────────
-export const productSalesData = [
-  { name: 'Whey Protein', sales: 42, revenue: 104958 },
-  { name: 'Gym Gloves',   sales: 38, revenue: 13262  },
-  { name: 'BCAA Powder',  sales: 28, revenue: 22372  },
-  { name: 'Shaker Bottle',sales: 55, revenue: 16445  },
-  { name: 'Pre-Workout',  sales: 22, revenue: 21978  },
-  { name: 'Yoga Mat',     sales: 9,  revenue: 11691  },
-];
+// OUT OF SCOPE: Product sales data removed per requirements
+
 
 // ── Peak Hours Heatmap Data ───────────────────────────────────────────────────
 export const peakHoursData = [
@@ -399,4 +368,80 @@ export const peakHoursData = [
   { hour: '7 PM',  Mon: 130,Tue: 120,Wed: 140,Thu: 125,Fri: 160,Sat: 85, Sun: 45 },
   { hour: '8 PM',  Mon: 90, Tue: 85, Wed: 95, Thu: 88, Fri: 110,Sat: 60, Sun: 30 },
   { hour: '9 PM',  Mon: 50, Tue: 45, Wed: 55, Thu: 48, Fri: 60, Sat: 40, Sun: 20 },
+];
+
+// ── Roadmap Phase 2 ───────────────────────────────────────────────────────────
+export const roadmapPhase2 = [
+  {
+    title: 'Mobile App (iOS & Android)',
+    desc: 'Native apps for members and trainers with QR check-in, push notifications, and offline support.',
+    status: 'in-progress', eta: 'Q4 2026',
+  },
+  {
+    title: 'AI Workout Recommendations',
+    desc: 'Machine-learning model that auto-generates personalised workout plans based on member goals and progress history.',
+    status: 'in-progress', eta: 'Q4 2026',
+  },
+  {
+    title: 'Razorpay / Stripe Integration',
+    desc: 'Fully automated online payment collection with auto-renewal, failed-payment retries, and instant receipts.',
+    status: 'planned', eta: 'Q1 2027',
+  },
+  {
+    title: 'Diet & Nutrition Planner',
+    desc: 'Built-in meal planner with macro tracking, Indian recipe database, and sync with trainer diet plans.',
+    status: 'planned', eta: 'Q1 2027',
+  },
+  {
+    title: 'WhatsApp & SMS Automation',
+    desc: 'Automated renewal reminders, booking confirmations, and promotional messages via WhatsApp Business API.',
+    status: 'planned', eta: 'Q2 2027',
+  },
+  {
+    title: 'Multi-Branch Management',
+    desc: 'Manage multiple gym locations from a single dashboard with consolidated reports and cross-branch member transfers.',
+    status: 'planned', eta: 'Q2 2027',
+  },
+];
+
+
+// ── Analytics Data ────────────────────────────────────────────────────────────
+export const peakHoursSimple = [
+  { hour: '5 AM',  count: 45 },
+  { hour: '6 AM',  count: 120 },
+  { hour: '7 AM',  count: 180 },
+  { hour: '8 AM',  count: 140 },
+  { hour: '9 AM',  count: 90 },
+  { hour: '10 AM', count: 60 },
+  { hour: '5 PM',  count: 90 },
+  { hour: '6 PM',  count: 160 },
+  { hour: '7 PM',  count: 200 },
+  { hour: '8 PM',  count: 150 },
+  { hour: '9 PM',  count: 80 },
+];
+
+export const trainerWorkloadData = [
+  { name: 'Rohit Kumar',      sessions: 48, clients: 24, utilization: 85 },
+  { name: 'Anjali Singh',     sessions: 36, clients: 18, utilization: 72 },
+  { name: 'Suresh Pillai',    sessions: 42, clients: 20, utilization: 78 },
+  { name: 'Meenakshi Iyer',   sessions: 55, clients: 30, utilization: 92 },
+];
+
+export const enquirySourceBreakdown = [
+  { source: 'Walk-in',      count: 32, color: '#39FF14' },
+  { source: 'Website',      count: 28, color: '#00D4FF' },
+  { source: 'Referral',     count: 22, color: '#A855F7' },
+  { source: 'Social Media', count: 18, color: '#EC4899' },
+  { source: 'Google Ads',   count: 12, color: '#FF6B00' },
+];
+
+export const memberRetentionData = [
+  { month: 'Jan', retained: 92, churned: 8 },
+  { month: 'Feb', retained: 90, churned: 10 },
+  { month: 'Mar', retained: 94, churned: 6 },
+  { month: 'Apr', retained: 93, churned: 7 },
+  { month: 'May', retained: 91, churned: 9 },
+  { month: 'Jun', retained: 95, churned: 5 },
+  { month: 'Jul', retained: 94, churned: 6 },
+  { month: 'Aug', retained: 96, churned: 4 },
 ];

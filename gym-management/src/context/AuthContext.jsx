@@ -60,9 +60,7 @@ const SEED_USERS = [
       progressNotes: [
         { date: '2026-08-15', note: 'Great progress on upper body strength. Increasing bench press load next week.', by: 'Rohit Kumar' },
         { date: '2026-07-30', note: 'Body composition improving. Keep up with the diet plan.', by: 'Rohit Kumar' },
-        { date: '2026-07-15', note: 'Cardio endurance significantly improved. Consistent attendance this month.', by: 'Rohit Kumar' },
       ],
-      attendanceSummary: { thisMonth: 22, lastMonth: 18, avgPerWeek: 5, totalSessions: 187 },
     },
   },
 ];
@@ -126,7 +124,7 @@ export const ROLE_CONFIG = {
     label: 'Master Admin', color: '#39FF14',
     allowedRoutes: [
       '/dashboard', '/dashboard/members', '/dashboard/plans',
-      '/dashboard/attendance', '/dashboard/trainers', '/dashboard/notifications',
+      '/dashboard/trainers', '/dashboard/notifications',
       '/dashboard/reports', '/dashboard/profile', '/dashboard/equipment',
       '/dashboard/products', '/dashboard/offers', '/dashboard/analytics',
     ],
@@ -134,14 +132,14 @@ export const ROLE_CONFIG = {
   trainer: {
     label: 'Trainer', color: '#00D4FF',
     allowedRoutes: [
-      '/dashboard', '/dashboard/attendance', '/dashboard/members',
+      '/dashboard', '/dashboard/members',
       '/dashboard/notifications', '/dashboard/profile',
     ],
   },
   staff: {
     label: 'Staff', color: '#FF6B00',
     allowedRoutes: [
-      '/dashboard', '/dashboard/members', '/dashboard/attendance',
+      '/dashboard', '/dashboard/members',
       '/dashboard/plans', '/dashboard/notifications', '/dashboard/profile',
       '/dashboard/equipment', '/dashboard/products',
     ],
@@ -149,7 +147,7 @@ export const ROLE_CONFIG = {
   receptionist: {
     label: 'Receptionist', color: '#A855F7',
     allowedRoutes: [
-      '/dashboard', '/dashboard/members', '/dashboard/attendance',
+      '/dashboard', '/dashboard/members',
       '/dashboard/plans', '/dashboard/notifications', '/dashboard/enquiries',
       '/dashboard/profile', '/dashboard/products',
     ],

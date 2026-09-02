@@ -1,39 +1,49 @@
 import { useState } from 'react';
-import { Download, TrendingUp, Users, DollarSign, Activity, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, TrendingUp, Users, IndianRupee, Activity, BarChart3 } from 'lucide-react';
 import {
-  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import { revenueData, attendanceData, membershipDistribution } from '../../data/sampleData';
+import { formatCurrency } from '../../utils/currency';
 
 const tabs = ['Revenue', 'Membership', 'Attendance', 'Trainers'];
 
+// Indian trainers data (INR)
 const trainerPerf = [
-  { name: 'Mike Stone', clients: 24, sessions: 96, rating: 4.9, revenue: 8400 },
-  { name: 'Sarah Fit', clients: 18, sessions: 72, rating: 4.8, revenue: 6300 },
-  { name: 'Tom Flex', clients: 20, sessions: 80, rating: 4.7, revenue: 7000 },
-  { name: 'Lisa Power', clients: 30, sessions: 120, rating: 5.0, revenue: 10500 },
-  { name: 'Chris Bulk', clients: 15, sessions: 60, rating: 4.6, revenue: 5250 },
+  { name: 'Rohit Kumar',    clients: 24, sessions: 48, rating: 4.9, revenue: 96000 },
+  { name: 'Anjali Singh',   clients: 18, sessions: 36, rating: 4.8, revenue: 72000 },
+  { name: 'Suresh Pillai',  clients: 20, sessions: 42, rating: 4.7, revenue: 84000 },
+  { name: 'Meenakshi Iyer', clients: 30, sessions: 55, rating: 5.0, revenue: 120000 },
+  { name: 'Deepak Verma',   clients: 0,  sessions: 0,  rating: 4.6, revenue: 0 },
 ];
 
-export default function Reports() {
-  const [tab, setTab] = useState('Revenue');
-  const [period, setPeriod] = useState('monthly');
-  const [slideIdx, setSlideIdx] = useState(0);
+const fmt = (n) => n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : n >= 1000 ? `₹${(n / 1000).toFixed(0)}K` : `₹${n}`;
 
-  // Mobile chart slider
-  const chartSections = [
-    { label: 'Revenue Trend' },
-    { label: 'Attendance' },
-    { label: 'Plan Mix' },
-  ];
+export default function Reports() {
+  const [tab, setTab]     = useState('Revenue');
+  const [period, setPeriod] = useState('monthly');
 
   const summaryCards = [
-    { label: 'Total Revenue', value: '$328K', change: '+18.2%', icon: DollarSign, color: '#39FF14', positive: true },
-    { label: 'New Members', value: '304', change: '+8.4%', icon: Users, color: '#00D4FF', positive: true },
-    { label: 'Avg Attendance', value: '73%', change: '-2.1%', icon: Activity, color: '#FF6B00', positive: false },
-    { label: 'Trainer Revenue', value: '$37.4K', change: '+21.3%', icon: TrendingUp, color: '#A855F7', positive: true },
+    { label: 'Total Revenue (YTD)',  value: '₹32.8L', change: '+18.2%', icon: IndianRupee, color: '#39FF14', positive: true  },
+    { label: 'New Members',          value: '304',     change: '+8.4%',  icon: Users,       color: '#00D4FF', positive: true  },
+    { label: 'Avg Attendance',       value: '73%',     change: '-2.1%',  icon: Activity,    color: '#FF6B00', positive: false },
+    { label: 'Trainer Revenue',      value: '₹3.7L',   change: '+21.3%', icon: TrendingUp,  color: '#A855F7', positive: true  },
   ];
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-3 text-xs shadow-xl">
+        <p className="text-gray-400 mb-1">{label}</p>
+        {payload.map((e, i) => (
+          <p key={i} style={{ color: e.color }} className="font-semibold">
+            {e.name}: {e.name.includes('Revenue') ? `₹${(e.value / 1000).toFixed(0)}K` : e.value}
+          </p>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -93,7 +103,7 @@ export default function Reports() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="font-bold text-white">Revenue Trend</h3>
-                <p className="text-xs text-gray-500">Jan–Aug 2026</p>
+                <p className="text-xs text-gray-500">Jan–Aug 2026 (₹)</p>
               </div>
               <div className="flex gap-4 text-xs text-gray-500">
                 <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 bg-[#39FF14] inline-block" />Revenue</span>
@@ -115,8 +125,8 @@ export default function Reports() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
                 <XAxis dataKey="month" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: '12px', fontSize: '12px' }} />
-                <Area type="monotone" dataKey="revenue" stroke="#39FF14" strokeWidth={2} fill="url(#r1)" name="Revenue ($)" />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="revenue" stroke="#39FF14" strokeWidth={2} fill="url(#r1)" name="Revenue (₹)" />
                 <Area type="monotone" dataKey="members" stroke="#00D4FF" strokeWidth={2} fill="url(#r2)" name="Members" />
               </AreaChart>
             </ResponsiveContainer>
@@ -129,7 +139,7 @@ export default function Reports() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-800">
-                    {['Month', 'Revenue', 'Members', 'Avg/Member', 'Growth'].map(h => (
+                    {['Month', 'Revenue (₹)', 'Members', 'Avg/Member (₹)', 'Growth'].map(h => (
                       <th key={h} className="text-left pb-3 text-xs text-gray-500 font-semibold px-2">{h}</th>
                     ))}
                   </tr>
@@ -141,9 +151,9 @@ export default function Reports() {
                     return (
                       <tr key={r.month} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                         <td className="py-3 px-2 text-sm font-medium text-white">{r.month}</td>
-                        <td className="py-3 px-2 text-sm font-bold text-white">${r.revenue.toLocaleString()}</td>
-                        <td className="py-3 px-2 text-sm text-gray-300">{r.members.toLocaleString()}</td>
-                        <td className="py-3 px-2 text-sm text-gray-400">${Math.round(r.revenue / r.members)}</td>
+                        <td className="py-3 px-2 text-sm font-bold text-white">{formatCurrency(r.revenue)}</td>
+                        <td className="py-3 px-2 text-sm text-gray-300">{r.members.toLocaleString('en-IN')}</td>
+                        <td className="py-3 px-2 text-sm text-gray-400">{formatCurrency(Math.round(r.revenue / r.members))}</td>
                         <td className="py-3 px-2">
                           <span className={`text-xs font-semibold ${growth === '—' ? 'text-gray-600' : parseFloat(growth) >= 0 ? 'text-[#39FF14]' : 'text-red-400'}`}>
                             {growth === '—' ? '—' : `${parseFloat(growth) >= 0 ? '+' : ''}${growth}%`}
@@ -171,7 +181,7 @@ export default function Reports() {
               <Legend formatter={(v) => <span style={{ color: '#9ca3af', fontSize: 12 }}>{v}</span>} />
               <Bar dataKey="morning" name="Morning" fill="#00D4FF" radius={[4, 4, 0, 0]} />
               <Bar dataKey="evening" name="Evening" fill="#FF6B00" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="total" name="Total" fill="#39FF14" radius={[4, 4, 0, 0]} opacity={0.4} />
+              <Bar dataKey="total"   name="Total"   fill="#39FF14" radius={[4, 4, 0, 0]} opacity={0.4} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -192,7 +202,7 @@ export default function Reports() {
                     <span className="text-sm font-bold" style={{ color: d.color }}>{d.value}%</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${d.value}%`, background: d.color }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${d.value}%`, background: d.color }} />
                   </div>
                 </div>
               ))}
@@ -205,14 +215,14 @@ export default function Reports() {
                 <svg viewBox="0 0 36 36" className="w-32 h-32 -rotate-90">
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#1f2937" strokeWidth="3" />
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#39FF14" strokeWidth="3"
-                    strokeDasharray={`${87 * 100 / 100} 100`} strokeLinecap="round" />
+                    strokeDasharray="87 100" strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-black text-white">87%</span>
                   <span className="text-xs text-gray-500">Retention</span>
                 </div>
               </div>
-              <p className="text-gray-400 text-sm mt-4 text-center">Monthly member retention rate — above industry average of 72%</p>
+              <p className="text-gray-400 text-sm mt-4 text-center">Monthly retention rate — above industry average of 72%</p>
             </div>
           </div>
         </div>
@@ -227,7 +237,7 @@ export default function Reports() {
             <table className="w-full">
               <thead className="bg-gray-800/30">
                 <tr>
-                  {['Trainer', 'Clients', 'Sessions', 'Rating', 'Revenue'].map(h => (
+                  {['Trainer', 'Clients', 'Sessions', 'Rating', 'Revenue (₹)'].map(h => (
                     <th key={h} className="text-left px-5 py-3 text-xs text-gray-500 font-semibold">{h}</th>
                   ))}
                 </tr>
@@ -250,7 +260,9 @@ export default function Reports() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-sm font-bold text-[#39FF14]">${t.revenue.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-[#39FF14]">
+                        {t.revenue > 0 ? formatCurrency(t.revenue) : '—'}
+                      </span>
                     </td>
                   </tr>
                 ))}

@@ -1,10 +1,11 @@
 import { CreditCard, Check, X, Clock, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { formatCurrency, parseCurrency } from '../../utils/currency';
 
 const STATUS_MAP = {
-  Paid:    { icon: Check,          color: '#39FF14', bg: 'bg-[#39FF14]/10 border-[#39FF14]/20 text-[#39FF14]' },
-  Failed:  { icon: X,              color: '#EF4444', bg: 'bg-red-500/10 border-red-500/20 text-red-400' },
-  Pending: { icon: Clock,          color: '#F59E0B', bg: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' },
+  Paid:    { icon: Check,  color: '#39FF14', bg: 'bg-[#39FF14]/10 border-[#39FF14]/20 text-[#39FF14]' },
+  Failed:  { icon: X,     color: '#EF4444', bg: 'bg-red-500/10 border-red-500/20 text-red-400' },
+  Pending: { icon: Clock, color: '#F59E0B', bg: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' },
 };
 
 function StatusBadge({ status }) {
@@ -23,7 +24,19 @@ export default function MemberPayments() {
   const history = mp?.paymentHistory || [];
   const pending = mp?.pendingPayments || [];
 
-  const totalPaid = history.filter(p => p.status === 'Paid').reduce((s, p) => s + parseFloat(p.amount.replace('$','')), 0);
+  const totalPaid = history
+    .filter(p => p.status === 'Paid')
+    .reduce((s, p) => s + parseCurrency(p.amount), 0);
+
+  const totalPending = pending.reduce((s, p) => s + parseCurrency(p.amount), 0);
+
+  // Next billing month
+  const now = new Date();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  // Price for the plan (look up from plan name)
+  const planPriceMap = { Basic: 799, Standard: 1499, Premium: 2299, VIP: 3999 };
+  const nextAmount = planPriceMap[mp?.plan] || 0;
 
   return (
     <div className="space-y-6">
@@ -33,11 +46,11 @@ export default function MemberPayments() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Total Paid (Lifetime)', value: `$${totalPaid}`, color: '#39FF14' },
-          { label: 'Current Plan',           value: mp?.plan || '—', color: '#F59E0B' },
-          { label: 'Pending Amount',          value: pending.length > 0 ? `$${pending.reduce((s,p)=>s+parseFloat(p.amount.replace('$','')),0)}` : '$0', color: pending.length > 0 ? '#EF4444' : '#6B7280' },
+          { label: 'Total Paid (Lifetime)', value: formatCurrency(totalPaid), color: '#39FF14' },
+          { label: 'Current Plan',           value: mp?.plan || '—',  color: '#F59E0B' },
+          { label: 'Pending Amount',          value: totalPending > 0 ? formatCurrency(totalPending) : '₹0', color: totalPending > 0 ? '#EF4444' : '#6B7280' },
         ].map(s => (
           <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
             <p className="text-xs text-gray-500 mb-1">{s.label}</p>
@@ -46,7 +59,7 @@ export default function MemberPayments() {
         ))}
       </div>
 
-      {/* Pending payments */}
+      {/* Pending payments alert */}
       {pending.length > 0 && (
         <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3">
@@ -67,35 +80,42 @@ export default function MemberPayments() {
         </div>
       )}
 
-      {/* Payment history table */}
+      {/* Payment history */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-800">
           <h3 className="font-bold text-white">Payment History</h3>
           <p className="text-xs text-gray-500">{history.length} transactions</p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-800/30">
-              <tr>
-                {['ID', 'Date', 'Plan', 'Amount', 'Method', 'Status'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-semibold">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {history.map(p => (
-                <tr key={p.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
-                  <td className="px-4 py-3 text-xs text-gray-500 font-mono">{p.id}</td>
-                  <td className="px-4 py-3 text-sm text-gray-300">{p.date}</td>
-                  <td className="px-4 py-3 text-sm text-white font-medium">{p.plan}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-white">{p.amount}</td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{p.method}</td>
-                  <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
+        {history.length === 0 ? (
+          <div className="py-12 text-center">
+            <CreditCard size={32} className="mx-auto mb-3 text-gray-700" />
+            <p className="text-gray-500 text-sm">No payment history yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-800/30">
+                <tr>
+                  {['ID', 'Date', 'Plan', 'Amount', 'Method', 'Status'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs text-gray-500 font-semibold">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {history.map(p => (
+                  <tr key={p.id} className="border-b border-gray-800/50 hover:bg-gray-800/20 transition-colors">
+                    <td className="px-4 py-3 text-xs text-gray-500 font-mono">{p.id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-300">{p.date}</td>
+                    <td className="px-4 py-3 text-sm text-white font-medium">{p.plan}</td>
+                    <td className="px-4 py-3 text-sm font-bold text-white">{p.amount}</td>
+                    <td className="px-4 py-3 text-xs text-gray-400">{p.method}</td>
+                    <td className="px-4 py-3"><StatusBadge status={p.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Next payment */}
@@ -106,12 +126,12 @@ export default function MemberPayments() {
           </div>
           <div>
             <p className="font-bold text-white text-sm">Next Payment Due</p>
-            <p className="text-xs text-gray-400">Sep 01, 2026 · {mp?.plan} Plan</p>
+            <p className="text-xs text-gray-400">{nextMonth} · {mp?.plan} Plan</p>
           </div>
         </div>
         <div className="text-right">
-          <p className="font-black text-white text-xl">$89</p>
-          <p className="text-xs text-gray-500">Auto-billing on Sep 1</p>
+          <p className="font-black text-white text-xl">{formatCurrency(nextAmount)}</p>
+          <p className="text-xs text-gray-500">Contact reception to renew</p>
         </div>
       </div>
     </div>

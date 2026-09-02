@@ -228,6 +228,8 @@ function HowItWorks() {
 
 // ── Pricing ───────────────────────────────────────────────────────────────────
 function Pricing() {
+  const [selectedCategory, setSelectedCategory] = React.useState('Mens');
+  
   const colorMap = {
     gray: { border: 'border-gray-700', badge: 'bg-gray-700 text-gray-300', btn: 'bg-gray-700 hover:bg-gray-600 text-white' },
     blue: { border: 'border-[#00D4FF]/40', badge: 'bg-[#00D4FF]/20 text-[#00D4FF]', btn: 'bg-[#00D4FF] hover:bg-[#00D4FF]/90 text-gray-950' },
@@ -244,9 +246,27 @@ function Pricing() {
           <p className="text-gray-400 text-lg max-w-xl mx-auto">Flexible plans that grow with your gym. No hidden fees, no contracts.</p>
         </div>
 
+        {/* Category Tabs */}
+        <div className="flex justify-center gap-2 mb-10">
+          {['Mens', 'Ladies', 'Mixed'].map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-6 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                selectedCategory === cat
+                  ? 'bg-[#39FF14] text-gray-950'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {membershipPlans.map(plan => {
             const c = colorMap[plan.color];
+            const price = plan.prices[selectedCategory];
             return (
               <div
                 key={plan.id}
@@ -261,8 +281,8 @@ function Pricing() {
                   {plan.name}
                 </div>
                 <div className="mb-6">
-                  <span className="text-4xl font-black text-white">${plan.price}</span>
-                  <span className="text-gray-500 text-sm">{plan.period}</span>
+                  <span className="text-4xl font-black text-white">₹{price.toLocaleString('en-IN')}</span>
+                  <span className="text-gray-500 text-sm">/month</span>
                 </div>
 
                 <ul className="space-y-2 mb-6 flex-1">
@@ -292,8 +312,8 @@ function Pricing() {
         </div>
 
         <p className="text-center text-gray-500 text-sm mt-8">
-          These are example member-facing plans. Admin SaaS pricing is separate.{' '}
-          <Link to="/register" className="text-[#39FF14] hover:underline">Contact sales →</Link>
+          Prices shown are for {selectedCategory} category. All plans include GST.{' '}
+          <Link to="/register" className="text-[#39FF14] hover:underline">Get Started →</Link>
         </p>
       </div>
     </section>

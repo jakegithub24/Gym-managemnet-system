@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, User, Calendar, CreditCard, TrendingUp, Bell, LogOut, Menu, X, Zap, ChevronDown } from 'lucide-react';
+import {
+  Home, User, Calendar, CreditCard, TrendingUp, Bell, LogOut,
+  Menu, X, Zap, ChevronDown, ShoppingBag, Bot
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV_ITEMS = [
-  { to: '/member',               label: 'Dashboard',    icon: Home,       end: true },
-  { to: '/member/profile',       label: 'My Profile',   icon: User },
-  { to: '/member/schedule',      label: 'My Schedule',  icon: Calendar },
-  { to: '/member/payments',      label: 'Payments',     icon: CreditCard },
-  { to: '/member/progress',      label: 'My Progress',  icon: TrendingUp },
-  { to: '/member/notifications', label: 'Notifications',icon: Bell },
+  { to: '/member',               label: 'Dashboard',      icon: Home,        end: true },
+  { to: '/member/profile',       label: 'My Profile',     icon: User },
+  { to: '/member/schedule',      label: 'My Schedule',    icon: Calendar },
+  { to: '/member/payments',      label: 'Payments',       icon: CreditCard },
+  { to: '/member/notifications', label: 'Notifications',  icon: Bell },
+  { to: '/member/ai-coach',      label: 'AI Coach',       icon: Bot },
 ];
 
 export default function MemberLayout() {
@@ -71,7 +74,7 @@ export default function MemberLayout() {
               {({ isActive }) => (
                 <>
                   <Icon size={17} style={isActive ? { color: COLOR } : {}} className={!isActive ? 'text-gray-500 group-hover:text-gray-300' : ''} />
-                  <span>{label}</span>
+                  <span className="flex-1">{label}</span>
                 </>
               )}
             </NavLink>

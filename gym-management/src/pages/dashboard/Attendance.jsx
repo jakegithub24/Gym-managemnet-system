@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { CalendarCheck, Search, Clock, MapPin, TrendingUp, Users, ArrowUpRight } from 'lucide-react';
+import { CalendarCheck, Search, Clock, MapPin, TrendingUp, Users, X, Check } from 'lucide-react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { attendanceLog, attendanceData } from '../../data/sampleData';
+import { attendanceLog as seedLog, attendanceData } from '../../data/sampleData';
+import { members } from '../../data/sampleData';
 
 const PER_PAGE = 6;
 
@@ -14,28 +15,123 @@ const areaStats = [
   { name: 'Yoga Studio', count: 43, pct: 12, color: '#A855F7' },
 ];
 
-export default function Attendance() {
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [activeView, setActiveView] = useState('daily');
+// ── Mark Attendance Modal ─────────────────────────────────────────────────────
+function MarkModal({ onClose, onSave }) {
+  const areas = ['Weight Room', 'Cardio Zone', 'Yoga Studio', 'Group Classes', 'Functional Area'];
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date().toTimeString().slice(0, 5);
+  const [form, setForm] = useState({ member: '', area: areas[0], date: today, checkIn: now, checkOut: '' });
+  const [errors, setErrors] = useState({});
+  const update = (k, v) => { setForm(p => ({ ...p, [k]: v })); setErrors(e => ({ ...e, [k]: '' })); };
 
-  const filtered = attendanceLog.filter(a =>
+  const validate = () => {
+    const e = {};
+    if (!form.member.trim()) e.member = 'Member name is required.';
+    if (!form.checkIn)       e.checkIn = 'Check-in time is required.';
+    return e;
+  };
+
+  const handleSave = () => {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    const duration = form.checkOut && form.checkIn
+      ? (() => { const diff = (new Date(`2000-01-01T${form.checkOut}`) - new Date(`2000-01-01T${form.checkIn}`)) / 60000; return diff > 0 ? `${Math.floor(diff / 60)}h ${diff % 60}m` : '—'; })()
+      : '—';
+    onSave({ ...form, duration });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-800">
+          <h2 className="font-bold text-white">Mark Attendance</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-white p-1 hover:bg-gray-800 rounded-lg"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Member Name *</label>
+            <input list="member-list" value={form.member} onChange={e => update('member', e.target.value)}
+              placeholder="Start typing a name..."
+              className={`w-full bg-gray-800 border rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors ${errors.member ? 'border-red-500/60' : 'border-gray-700 focus:border-[#39FF14]/50'}`} />
+            <datalist id="member-list">
+              {members.map(m => <option key={m.id} value={m.name} />)}
+            </datalist>
+            {errors.member && <p className="text-xs text-red-400 mt-1">{errors.member}</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1.5">Zone / Area</label>
+            <select value={form.area} onChange={e => update('area', e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none">
+              {areas.map(a => <option key={a}>{a}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Check-In *</label>
+              <input type="time" value={form.checkIn} onChange={e => update('checkIn', e.target.value)}
+                className={`w-full bg-gray-800 border rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none ${errors.checkIn ? 'border-red-500/60' : 'border-gray-700 focus:border-[#39FF14]/50'}`} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Check-Out</label>
+              <input type="time" value={form.checkOut} onChange={e => update('checkOut', e.target.value)}
+                className="w-full bg-gray-800 border border-gray-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#39FF14]/50" />
+            </div>
+          </div>
+          <button onClick={handleSave}
+            className="w-full bg-[#39FF14] text-gray-950 font-bold py-3 rounded-xl hover:bg-[#39FF14]/90 transition-all">
+            Save Attendance
+          </button>
+        </div>
+      </div>
+      {markOpen && <MarkModal onClose={() => setMarkOpen(false)} onSave={handleMark} />}
+    </div>
+  );
+}
+export default function Attendance() {
+  const [log, setLog] = useState(() => {
+    try { const s = localStorage.getItem('gymforce_attendance'); return s ? JSON.parse(s) : seedLog; } catch { return seedLog; }
+  });
+  const saveLog = (l) => { setLog(l); localStorage.setItem('gymforce_attendance', JSON.stringify(l)); };
+
+  const [search, setSearch]     = useState('');
+  const [page, setPage]         = useState(1);
+  const [activeView, setActiveView] = useState('daily');
+  const [markOpen, setMarkOpen] = useState(false);
+  const [toast, setToast]       = useState('');
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+
+  const filtered = log.filter(a =>
     a.member.toLowerCase().includes(search.toLowerCase()) || a.area.toLowerCase().includes(search.toLowerCase())
   );
   const totalPages = Math.ceil(filtered.length / PER_PAGE);
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  const todayTotal = attendanceLog.filter(a => a.date === '2026-08-19').length;
-  const weeklyAvg = Math.round(attendanceData.reduce((s, d) => s + d.total, 0) / attendanceData.length);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayTotal = log.filter(a => a.date === '2026-08-21' || a.date === todayStr).length;
+  const weeklyAvg  = Math.round(attendanceData.reduce((s, d) => s + d.total, 0) / attendanceData.length);
+
+  const handleMark = (data) => {
+    const newEntry = { id: log.length + 1, ...data };
+    saveLog([newEntry, ...log]);
+    setMarkOpen(false);
+    showToast(`Attendance marked for ${data.member}.`);
+  };
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-gray-800 border border-[#39FF14]/30 text-white text-sm px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-slide-up">
+          <Check size={14} className="text-[#39FF14]" /> {toast}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-black text-white">Attendance Tracking</h1>
           <p className="text-gray-500 text-sm">Monitor daily check-ins and gym usage</p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-[#39FF14] text-gray-950 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#39FF14]/90 transition-all">
+        <button onClick={() => setMarkOpen(true)}
+          className="inline-flex items-center gap-2 bg-[#39FF14] text-gray-950 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-[#39FF14]/90 transition-all">
           <CalendarCheck size={16} /> Mark Attendance
         </button>
       </div>
