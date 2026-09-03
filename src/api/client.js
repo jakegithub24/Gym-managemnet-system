@@ -13,3 +13,5 @@ async function request(path, options = {}) {
 export const apiLogin = (email, password) => request('/auth/login/', { method: 'POST', body: JSON.stringify({ email, password }) });
 export const apiRegister = (form) => request('/auth/register/', { method: 'POST', body: JSON.stringify({ full_name: form.name, email: form.email, phone: form.phone, password: form.password }) });
 export const apiHealth = () => request('/health/');
+
+export const apiDashboardSummary = (token) => request('/dashboard/summary/', { headers: { Authorization: `Bearer ${token}` } });

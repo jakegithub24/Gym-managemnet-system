@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, Users, DollarSign, Activity,
@@ -6,6 +6,7 @@ import {
   ArrowUpRight, Shield, Briefcase
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { apiDashboardSummary } from '../../api/client';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -97,6 +98,19 @@ function QuickActions() {
 
 export default function DashboardHome() {
   const { currentUser, ROLE_CONFIG } = useAuth();
+  const [liveSummary, setLiveSummary] = useState(null);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('gymforce_access_token');
+    if (!token) return undefined;
+    let active = true;
+    apiDashboardSummary(token).then((summary) => {
+      if (active) setLiveSummary(summary);
+    }).catch(() => {
+      if (active) setLiveSummary(null);
+    });
+    return () => { active = false; };
+  }, []);
   const role = currentUser?.role || 'staff';
   const roleConfig = ROLE_CONFIG[role];
 
@@ -106,10 +120,10 @@ export default function DashboardHome() {
   const paginated = recentPayments.slice((payPage - 1) * PER_PAGE, payPage * PER_PAGE);
 
   const kpis = [
-    { title: kpiData.revenue.label, value: kpiData.revenue.value, change: kpiData.revenue.change, positive: kpiData.revenue.positive, icon: DollarSign, color: '#39FF14' },
-    { title: kpiData.members.label, value: kpiData.members.value, change: kpiData.members.change, positive: kpiData.members.positive, icon: Users, color: '#00D4FF' },
+    { title: kpiData.revenue.label, value: liveSummary ? `₹${Number(liveSummary.total_revenue || 0).toLocaleString('en-IN')}` : kpiData.revenue.value, change: liveSummary ? 'Live from API' : kpiData.revenue.change, positive: true, icon: DollarSign, color: '#39FF14' },
+    { title: kpiData.members.label, value: liveSummary ? liveSummary.total_members : kpiData.members.value, change: liveSummary ? 'Live from API' : kpiData.members.change, positive: true, icon: Users, color: '#00D4FF' },
     { title: kpiData.attendance.label, value: kpiData.attendance.value, change: kpiData.attendance.change, positive: kpiData.attendance.positive, icon: Activity, color: '#FF6B00' },
-    { title: kpiData.expiring.label, value: kpiData.expiring.value, change: kpiData.expiring.change, positive: kpiData.expiring.positive, icon: AlertTriangle, color: '#A855F7' },
+    { title: kpiData.expiring.label, value: liveSummary ? liveSummary.pending_payments : kpiData.expiring.value, change: liveSummary ? 'Pending verification' : kpiData.expiring.change, positive: false, icon: AlertTriangle, color: '#A855F7' },
   ];
 
   return (
