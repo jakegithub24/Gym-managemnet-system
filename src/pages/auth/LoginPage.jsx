@@ -78,13 +78,14 @@ export default function LoginPage() {
     setLoading(true);
 
     setTimeout(() => {
-      const result = login(email.trim(), password, role);
-      setLoading(false);
-      if (result.success) {
-        navigate(from, { replace: true });
-      } else {
-        setError(result.error);
-      }
+      login(email.trim(), password, role).then((result) => {
+        setLoading(false);
+        if (result.success) navigate(from, { replace: true });
+        else setError(result.error);
+      }).catch((requestError) => {
+        setLoading(false);
+        setError(requestError.message || 'Unable to sign in.');
+      });
     }, 800);
   };
 

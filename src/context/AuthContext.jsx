@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
+import { apiLogin, apiRegister } from '../api/client';
 
 // ── Seeded users (simulate a database) ──────────────────────────────────────
 const SEED_USERS = [
@@ -106,7 +107,20 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ── Login ─────────────────────────────────────────────────────────────────
-  const login = useCallback((email, password, selectedRole) => {
+  const login = useCallback(async (email, password, selectedRole) => {
+    try {
+      const remote = await apiLogin(email.trim().toLowerCase(), password);
+      const roleMap = { 'Master Admin': 'master_admin', 'Trainer': 'trainer', 'Staff': 'staff', 'Receptionist': 'receptionist', 'Member': 'member' };
+      if (roleMap[selectedRole] && remote.role !== roleMap[selectedRole]) return { success: false, error: `This account is registered as "${ROLE_CONFIG[remote.role]?.label || remote.role}".` };
+      const sessionUser = { ...remote, name: remote.full_name, avatar: (remote.full_name || 'GU').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() };
+      delete sessionUser.access_token;
+      setCurrentUser(sessionUser);
+      sessionStorage.setItem('gymforce_user', JSON.stringify(sessionUser));
+      sessionStorage.setItem('gymforce_access_token', remote.access_token);
+      return { success: true, user: sessionUser };
+    } catch (remoteError) {
+      // Fall through to the seeded demo accounts when the local API is offline.
+    }
     const emailLower = email.trim().toLowerCase();
     const user = users.find(u => u.email.toLowerCase() === emailLower);
 
@@ -141,7 +155,18 @@ export function AuthProvider({ children }) {
   }, [users]);
 
   // ── Register ──────────────────────────────────────────────────────────────
-  const register = useCallback((formData) => {
+  const register = useCallback(async (formData) => {
+    try {
+      const remote = await apiRegister(formData);
+      const sessionUser = { ...remote, name: remote.full_name, avatar: (remote.full_name || 'GU').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() };
+      delete sessionUser.access_token;
+      setCurrentUser(sessionUser);
+      sessionStorage.setItem('gymforce_user', JSON.stringify(sessionUser));
+      sessionStorage.setItem('gymforce_access_token', remote.access_token);
+      return { success: true, user: sessionUser };
+    } catch (remoteError) {
+      // Fall through to the local demo account store when the API is offline.
+    }
     const emailLower = formData.email.trim().toLowerCase();
     const exists = users.find(u => u.email.toLowerCase() === emailLower);
 

@@ -85,13 +85,14 @@ export default function RegisterPage() {
     setLoading(true);
 
     setTimeout(() => {
-      const result = register(form);
-      setLoading(false);
-      if (result.success) {
-        navigate('/dashboard', { replace: true });
-      } else {
-        setError(result.error);
-      }
+      register(form).then((result) => {
+        setLoading(false);
+        if (result.success) navigate('/dashboard', { replace: true });
+        else setError(result.error);
+      }).catch((requestError) => {
+        setLoading(false);
+        setError(requestError.message || 'Unable to create account.');
+      });
     }, 900);
   };
 
