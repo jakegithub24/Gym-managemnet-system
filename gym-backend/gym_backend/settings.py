@@ -15,11 +15,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ninja',
-    'api',
+    'api.apps.ApiConfig',
     'apps.users',
     'apps.members',
     'apps.plans',
     'apps.payments',
+    'apps.operations',
+    'apps.subscriptions',
 ]
 
 MIDDLEWARE = [

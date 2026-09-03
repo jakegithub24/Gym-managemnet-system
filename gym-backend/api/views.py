@@ -7,10 +7,13 @@ from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.db import IntegrityError, transaction
 
 from apps.members.models import MemberProfile
 from apps.payments.models import PaymentRecord
 from apps.plans.models import MembershipPlan
+from apps.operations.models import Attendance, Inquiry, Trainer, WorkoutDietPlan
+from apps.subscriptions.models import Subscription, Trial
 
 User = get_user_model()
 STAFF_ROLES = {'master_admin', 'staff', 'receptionist'}
@@ -134,8 +137,14 @@ def verify_payment(request, payment_id):
     status = _read_json(request).get('status', 'verified')
     if status not in {'verified', 'rejected'}:
         return JsonResponse({'detail': 'status must be verified or rejected'}, status=400)
-    payment.status = status
-    payment.save(update_fields=['status'])
+    with transaction.atomic():
+        payment.status = status
+        payment.save(update_fields=['status'])
+        if status == 'verified':
+            payment.user.member_profile.status = 'active'
+            payment.user.member_profile.save(update_fields=['status'])
+            start_date = timezone.localdate()
+            Subscription.objects.create(member=payment.user.member_profile, plan=payment.plan, start_date=start_date, end_date=start_date + __import__('datetime').timedelta(days=payment.plan.duration_days))
     return JsonResponse({'id': payment.id, 'status': payment.status})
 
 
@@ -148,3 +157,82 @@ def dashboard_summary(request):
     pending_payments = PaymentRecord.objects.filter(status='pending').count()
     total_revenue = sum((record.amount for record in PaymentRecord.objects.filter(status='verified')), 0)
     return JsonResponse({'total_members': total_members, 'active_members': active_members, 'pending_payments': pending_payments, 'total_revenue': total_revenue, 'summary': {'members': total_members, 'revenue': total_revenue, 'pending': pending_payments}})
+
+
+def inquiries(request):
+    user = _token_user(request)
+    if request.method == 'GET':
+        if not user or user.role not in STAFF_ROLES:
+            return JsonResponse({'detail': 'Staff authorization required'}, status=403)
+        return JsonResponse({'inquiries': list(Inquiry.objects.order_by('-created_at').values('id','name','phone','fitness_goal','status','created_at'))})
+    if request.method != 'POST':
+        return JsonResponse({'detail': 'Method not allowed'}, status=405)
+    data = _read_json(request)
+    name, phone, goal = (data.get('name') or '').strip(), (data.get('phone') or '').strip(), (data.get('fitness_goal') or '').strip()
+    if not name or not phone or not goal:
+        return JsonResponse({'detail': 'name, phone, and fitness_goal are required'}, status=400)
+    inquiry = Inquiry.objects.create(name=name, phone=phone, fitness_goal=goal)
+    return JsonResponse({'id': str(inquiry.id), 'status': inquiry.status}, status=201)
+
+
+def trials(request):
+    if request.method != 'POST':
+        return JsonResponse({'detail': 'Method not allowed'}, status=405)
+    data = _read_json(request)
+    phone = (data.get('phone') or '').strip()
+    if not phone:
+        return JsonResponse({'detail': 'phone is required'}, status=400)
+    try:
+        trial = Trial.objects.create(phone=phone, start_date=timezone.localdate(), end_date=timezone.localdate(), status='active')
+    except IntegrityError:
+        return JsonResponse({'detail': 'A trial already exists for this phone number'}, status=409)
+    return JsonResponse({'id': str(trial.id), 'start_date': trial.start_date, 'end_date': trial.end_date, 'status': trial.status}, status=201)
+
+
+def check_in(request):
+    user = _token_user(request)
+    if request.method != 'POST' or not user or user.role not in STAFF_ROLES | {'member'}:
+        return JsonResponse({'detail': 'Authentication required'}, status=401)
+    data = _read_json(request)
+    try:
+        member = MemberProfile.objects.get(id=data.get('member_id'))
+    except (MemberProfile.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({'detail': 'Member not found'}, status=404)
+    if user.role == 'member' and member.user_id != user.id:
+        return JsonResponse({'detail': 'Members can only check in themselves'}, status=403)
+    attendance, created = Attendance.objects.get_or_create(member=member, session_date=timezone.localdate())
+    return JsonResponse({'id': str(attendance.id), 'member_id': member.id, 'session_date': attendance.session_date, 'created': created}, status=201 if created else 200)
+
+
+def assign_trainer(request, member_id):
+    user = _token_user(request)
+    if request.method != 'POST' or not user or user.role not in STAFF_ROLES:
+        return JsonResponse({'detail': 'Staff authorization required'}, status=403)
+    data = _read_json(request)
+    try:
+        member = MemberProfile.objects.get(id=member_id)
+        trainer = Trainer.objects.get(id=data.get('trainer_id'))
+    except (MemberProfile.DoesNotExist, Trainer.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({'detail': 'Member or trainer not found'}, status=404)
+    member.notes = f'trainer:{trainer.id}'
+    member.save(update_fields=['notes'])
+    return JsonResponse({'member_id': member.id, 'trainer_id': str(trainer.id)})
+
+
+def workouts(request):
+    user = _token_user(request)
+    if not user:
+        return JsonResponse({'detail': 'Authentication required'}, status=401)
+    data = _read_json(request)
+    if request.method == 'GET':
+        member_id = data.get('member_id') or request.GET.get('member_id')
+        query = WorkoutDietPlan.objects.filter(member_id=member_id) if member_id else WorkoutDietPlan.objects.none()
+        if user.role == 'member': query = query.filter(member__user=user)
+        return JsonResponse({'plans': list(query.values('id','member_id','trainer_id','workout_text','diet_text','updated_at'))})
+    if request.method != 'POST' or user.role != 'trainer':
+        return JsonResponse({'detail': 'Trainer authorization required'}, status=403)
+    try:
+        plan, _ = WorkoutDietPlan.objects.update_or_create(member_id=data.get('member_id'), trainer__user=user, defaults={'trainer_id': data.get('trainer_id'), 'workout_text': data.get('workout_text',''), 'diet_text': data.get('diet_text','')})
+    except (ValueError, TypeError, IntegrityError):
+        return JsonResponse({'detail': 'Valid member_id and trainer_id are required'}, status=400)
+    return JsonResponse({'id': str(plan.id), 'updated_at': plan.updated_at}, status=201)

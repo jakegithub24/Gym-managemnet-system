@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from apps.members.models import MemberProfile
 from apps.plans.models import MembershipPlan
+from apps.subscriptions.models import Subscription, Trial
 from apps.users.models import User
 
 
@@ -79,6 +80,29 @@ class GymWorkflowApiTests(TestCase):
         self.assertEqual(staff_summary.json()['total_members'], 1)
         self.assertEqual(staff_list.status_code, 200)
         self.assertEqual(staff_list.json()['members'][0]['member_id'], 'MEM-00001')
+
+    def test_verified_payment_activates_member_and_creates_subscription(self):
+        payment = self.client.post('/api/payments/', {'plan_id': self.plan.id, 'transaction_reference': 'UTR456'}, content_type='application/json', HTTP_AUTHORIZATION=f'Bearer {self.member_token}')
+        verify = self.client.post(f"/api/payments/{payment.json()['id']}/verify/", {'status': 'verified'}, content_type='application/json', HTTP_AUTHORIZATION=f'Bearer {self.staff_token}')
+        self.assertEqual(verify.status_code, 200)
+        self.member.refresh_from_db()
+        self.assertEqual(self.member.member_profile.status, 'active')
+        subscription = Subscription.objects.get(member=self.member.member_profile)
+        self.assertEqual(subscription.end_date, subscription.start_date + __import__('datetime').timedelta(days=30))
+
+    def test_trial_phone_is_rejected_by_database_unique_constraint(self):
+        from django.db import IntegrityError
+        from django.utils import timezone
+        Trial.objects.create(phone='9999999999', start_date=timezone.localdate(), end_date=timezone.localdate())
+        with self.assertRaises(IntegrityError):
+            Trial.objects.create(phone='9999999999', start_date=timezone.localdate(), end_date=timezone.localdate())
+
+    def test_public_inquiry_is_created_and_staff_can_read_it(self):
+        created = self.client.post('/api/inquiries/', {'name': 'Lead', 'phone': '8888888888', 'fitness_goal': 'Strength'}, content_type='application/json')
+        self.assertEqual(created.status_code, 201)
+        leads = self.client.get('/api/inquiries/', HTTP_AUTHORIZATION=f'Bearer {self.staff_token}')
+        self.assertEqual(leads.status_code, 200)
+        self.assertEqual(leads.json()['inquiries'][0]['name'], 'Lead')
 
     def test_unauthenticated_payment_access_is_rejected(self):
         response = self.client.get('/api/payments/')
