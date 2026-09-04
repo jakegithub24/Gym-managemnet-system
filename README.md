@@ -104,7 +104,7 @@ The UI is inspired by leading fitness brands and modern SaaS admin panels, featu
 
 ### Prerequisites
 - Node.js 18+ & npm 9+
-- Python 3.11+ (for Django backend)
+- Python 3.11+ (for FastAPI backend)
 
 ### Setup & Running Locally
 
@@ -116,17 +116,17 @@ npm run dev
 ```
 Open **`http://localhost:5173`** in your browser.
 
-#### 2. Backend (Django)
+#### 2. Backend (FastAPI)
 ```bash
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+python main.py
 ```
 - **Backend API**: `http://localhost:8000/api/`
-- **Swagger Docs**: `http://localhost:8000/api/docs/`
+- **Interactive Swagger Docs**: `http://localhost:8000/api/docs`
+- **ReDoc Documentation**: `http://localhost:8000/api/redoc`
 
 ---
 
@@ -134,11 +134,17 @@ python manage.py runserver
 
 ```
 Gym-managemnet-system/
-├── backend/                    # Django API backend
-│   ├── api/                    # API endpoints & ninja routers
-│   ├── apps/                   # Core apps (members, billing, attendance)
-│   ├── gym_backend/            # Project configuration & settings
-│   ├── manage.py
+├── backend/                    # FastAPI + Pydantic v2 + SQLAlchemy backend
+│   ├── app/
+│   │   ├── core/               # Security, JWT tokens & Auth dependencies
+│   │   ├── models/             # SQLAlchemy ORM models & Seed loader
+│   │   ├── schemas/            # Pydantic validation schemas
+│   │   ├── routers/            # API endpoints (Auth, Members, Plans, etc.)
+│   │   ├── database.py         # DB connection & session factory
+│   │   ├── config.py           # Application settings
+│   │   └── main.py             # FastAPI app instance & middleware
+│   ├── main.py                 # Server runner
+│   ├── cli.py                  # CLI utility commands
 │   └── requirements.txt
 │
 └── frontend/                   # React 19 + Vite 8 frontend
