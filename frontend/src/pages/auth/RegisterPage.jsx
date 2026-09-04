@@ -61,8 +61,11 @@ export default function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
-    if (currentUser) navigate('/dashboard', { replace: true });
-  }, [currentUser]);
+    if (currentUser) {
+      const dest = (currentUser.role === 'gym_member' || currentUser.role === 'member') ? '/member' : '/dashboard';
+      navigate(dest, { replace: true });
+    }
+  }, [currentUser, navigate]);
 
   useEffect(() => {
     const t = setInterval(() => setBgIdx(i => (i + 1) % BG_IMAGES.length), 5000);
@@ -109,15 +112,14 @@ export default function RegisterPage() {
     if (!agreed) { setError('You must agree to the Terms of Service to continue.'); return; }
     setLoading(true);
 
-    setTimeout(() => {
-      const result = register(form);
-      setLoading(false);
-      if (result.success) {
-        navigate('/dashboard', { replace: true });
-      } else {
-        setError(result.error);
-      }
-    }, 900);
+    const result = register(form);
+    setLoading(false);
+    if (result.success) {
+      const dest = (result.user?.role === 'gym_member' || result.user?.role === 'member') ? '/member' : '/dashboard';
+      navigate(dest, { replace: true });
+    } else {
+      setError(result.error);
+    }
   };
 
   // Password strength

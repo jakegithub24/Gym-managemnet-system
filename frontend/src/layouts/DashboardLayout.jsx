@@ -41,14 +41,15 @@ export default function DashboardLayout() {
   const [notifOpen,   setNotifOpen]   = useState(false);
   const navigate = useNavigate();
 
-  const role       = currentUser?.role || 'staff';
-  const roleConfig = ROLE_CONFIG[role];
+  const role       = currentUser?.role || 'master_admin';
+  const roleConfig = ROLE_CONFIG[role] || ROLE_CONFIG.master_admin;
   const RoleIcon   = ROLE_ICONS[role] || UserCheck;
   const navItems   = ALL_NAV.filter(n => n.roles.includes(role));
   const unreadNotifs   = sampleNotifs.filter(n => !n.read).length;
   const openEnquiries  = enquiries?.filter(e => e.status === 'open').length || 0;
   const followUpDue    = enquiries?.filter(e => e.status === 'follow_up_due').length || 0;
-  const initials = currentUser?.avatar || currentUser?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '??';
+  const userName = currentUser?.name || currentUser?.full_name || 'User';
+  const initials = currentUser?.avatar || userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'AU';
 
   const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
 
@@ -80,14 +81,15 @@ export default function DashboardLayout() {
               {initials}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{currentUser?.name}</p>
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
               <div className="flex items-center gap-1 mt-0.5">
                 <RoleIcon size={10} style={{ color: roleConfig?.color }} />
-                <span className="text-xs font-medium" style={{ color: roleConfig?.color }}>{roleConfig?.label}</span>
+                <span className="text-xs font-medium" style={{ color: roleConfig?.color }}>{roleConfig?.label || 'Staff'}</span>
               </div>
             </div>
           </div>
         </div>
+
 
         {/* Nav */}
         <nav className="flex-1 p-3 space-y-4 overflow-y-auto">

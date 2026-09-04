@@ -8,6 +8,7 @@ export const kpiData = {
   pendingDues:{ value: '₹68,400',   change: '+3',     positive: false, label: 'Pending Dues'          },
   newEnquiries:{ value: '18',       change: '+4',     positive: true,  label: 'New Enquiries'         },
   equipment:  { value: '42',        change: '3 due',  positive: false, label: 'Equipment Items'       },
+  attendance: { value: '73%',       change: '+4.1%',  positive: true,  label: 'Avg Attendance'        },
 };
 
 // ── Revenue & Member Growth ───────────────────────────────────────────────────

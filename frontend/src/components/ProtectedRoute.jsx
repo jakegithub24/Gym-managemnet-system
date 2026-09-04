@@ -9,26 +9,38 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  const role = currentUser.role || 'staff';
+  const isMember = role === 'gym_member' || role === 'member';
+
   // Role-specific redirect — gym members go to /member portal
-  if (currentUser.role === 'gym_member' && !location.pathname.startsWith('/member')) {
+  if (isMember && !location.pathname.startsWith('/member')) {
     return <Navigate to="/member" replace />;
   }
 
   // Staff/admin trying to access /member — redirect to dashboard
-  if (currentUser.role !== 'gym_member' && location.pathname.startsWith('/member')) {
+  if (!isMember && location.pathname.startsWith('/member')) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // allowedRoles whitelist (optional — used on specific route configs)
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to="/dashboard" replace />;
+  // allowedRoles whitelist
+  if (allowedRoles) {
+    const isAllowed =
+      allowedRoles.includes(role) ||
+      (isMember && (allowedRoles.includes('gym_member') || allowedRoles.includes('member')));
+    if (!isAllowed) {
+      const fallback = isMember ? '/member' : '/dashboard';
+      return <Navigate to={fallback} replace />;
+    }
   }
 
   // Path-level permission check
-  if (!canAccess(location.pathname)) {
-    const fallback = currentUser.role === 'gym_member' ? '/member' : '/dashboard';
-    return <Navigate to={fallback} replace />;
+  if (canAccess && !canAccess(location.pathname)) {
+    const fallback = isMember ? '/member' : '/dashboard';
+    if (location.pathname !== fallback) {
+      return <Navigate to={fallback} replace />;
+    }
   }
 
   return children;
 }
+

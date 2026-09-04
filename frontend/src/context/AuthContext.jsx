@@ -164,6 +164,27 @@ export const ROLE_CONFIG = {
       '/member/progress', '/member/notifications', '/member/shop', '/member/ai-coach',
     ],
   },
+  member: {
+    label: 'Gym Member', color: '#F59E0B',
+    allowedRoutes: [
+      '/member', '/member/profile', '/member/schedule', '/member/payments',
+      '/member/progress', '/member/notifications', '/member/shop', '/member/ai-coach',
+    ],
+  },
+};
+
+const normalizeUser = (u) => {
+  if (!u) return null;
+  const name = u.name || u.full_name || 'User';
+  const role = u.role || 'staff';
+  const avatar = u.avatar || u.avatar_url || name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  return {
+    ...u,
+    name,
+    full_name: name,
+    role,
+    avatar,
+  };
 };
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -172,8 +193,12 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   // ── Auth State ─────────────────────────────────────────────────────────────
   const [currentUser, setCurrentUser] = useState(() => {
-    try { const s = sessionStorage.getItem('gymforce_user'); return s ? JSON.parse(s) : null; }
-    catch { return null; }
+    try {
+      const s = sessionStorage.getItem('gymforce_user') || localStorage.getItem('gymforce_user');
+      return s ? normalizeUser(JSON.parse(s)) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [users, setUsers] = useState(() => {
@@ -225,7 +250,8 @@ export function AuthProvider({ children }) {
       return { success: false, error: `This account is registered as "${ROLE_CONFIG[user.role]?.label}". Please select the correct role tab.` };
     }
 
-    const sessionUser = { ...user }; delete sessionUser.password;
+    const sessionUser = normalizeUser({ ...user });
+    delete sessionUser.password;
     setCurrentUser(sessionUser);
     sessionStorage.setItem('gymforce_user', JSON.stringify(sessionUser));
     return { success: true, user: sessionUser };
@@ -239,16 +265,24 @@ export function AuthProvider({ children }) {
     if (formData.password.length < 8)
       return { success: false, error: 'Password must be at least 8 characters.' };
 
-    const roleMap = { 'Master Admin': 'master_admin', Trainer: 'trainer', Staff: 'staff', Receptionist: 'receptionist' };
+    const roleMap = { 'Master Admin': 'master_admin', Trainer: 'trainer', Staff: 'staff', Receptionist: 'receptionist', 'Gym Member': 'gym_member' };
+    const roleKey = roleMap[formData.role] || (formData.role === 'master_admin' || formData.role === 'trainer' || formData.role === 'staff' || formData.role === 'receptionist' ? formData.role : 'master_admin');
+
     const newUser = {
-      id: `u${Date.now()}`, name: formData.name.trim(), email: emailLower,
-      password: formData.password, role: roleMap[formData.role] || 'staff',
-      gym: formData.gym || 'GymForce',
+      id: `u${Date.now()}`,
+      name: formData.name.trim(),
+      email: emailLower,
+      password: formData.password,
+      role: roleKey,
+      gym: formData.gym || 'GymForce HQ',
       avatar: formData.name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-      phone: formData.phone || '', gender: formData.gender || '',
+      phone: formData.phone || '',
+      gender: formData.gender || '',
     };
-    const updated = [...users, newUser]; saveUsers(updated);
-    const sessionUser = { ...newUser }; delete sessionUser.password;
+    const updated = [...users, newUser];
+    saveUsers(updated);
+    const sessionUser = normalizeUser({ ...newUser });
+    delete sessionUser.password;
     setCurrentUser(sessionUser);
     sessionStorage.setItem('gymforce_user', JSON.stringify(sessionUser));
     return { success: true, user: sessionUser };
@@ -258,11 +292,13 @@ export function AuthProvider({ children }) {
   const updateProfile = useCallback((updates) => {
     const updated = users.map(u => u.id === currentUser.id ? { ...u, ...updates } : u);
     saveUsers(updated);
-    const sessionUser = { ...currentUser, ...updates }; delete sessionUser.password;
+    const sessionUser = normalizeUser({ ...currentUser, ...updates });
+    delete sessionUser.password;
     setCurrentUser(sessionUser);
     sessionStorage.setItem('gymforce_user', JSON.stringify(sessionUser));
     return { success: true };
   }, [currentUser, users, saveUsers]);
+
 
   // ── Change Password ───────────────────────────────────────────────────────
   const changePassword = useCallback((oldPass, newPass) => {

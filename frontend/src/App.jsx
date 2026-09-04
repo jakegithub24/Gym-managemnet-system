@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // ── Public pages ──────────────────────────────────────────────────────────────
 import LandingPage        from './pages/LandingPage';
@@ -40,64 +41,66 @@ const STAFF_ROLES = ['master_admin', 'trainer', 'staff', 'receptionist'];
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* ── Public ──────────────────────────────────────────────────── */}
-          <Route path="/"                element={<LandingPage />} />
-          <Route path="/login"           element={<LoginPage />} />
-          <Route path="/register"        element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/enquiry"         element={<MemberEnquiryPage />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* ── Public ──────────────────────────────────────────────────── */}
+            <Route path="/"                element={<LandingPage />} />
+            <Route path="/login"           element={<LoginPage />} />
+            <Route path="/register"        element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/enquiry"         element={<MemberEnquiryPage />} />
 
-          {/* ── Staff / Admin Dashboard ──────────────────────────────────── */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={STAFF_ROLES}>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index                   element={<DashboardHome />} />
-            <Route path="members"          element={<Members />} />
-            <Route path="plans"            element={<MembershipPlans />} />
-            <Route path="trainers"         element={<Trainers />} />
-            <Route path="attendance"       element={<Attendance />} />
-            <Route path="equipment"        element={<EquipmentManagement />} />
-            <Route path="products"         element={<Products />} />
-            <Route path="offers"           element={<Offers />} />
-            <Route path="notifications"    element={<Notifications />} />
-            <Route path="reports"          element={<Reports />} />
-            <Route path="enquiries"        element={<Enquiries />} />
-            <Route path="profile"          element={<ProfileSettings />} />
-            <Route path="analytics"        element={<Analytics />} />
-          </Route>
+            {/* ── Staff / Admin Dashboard ──────────────────────────────────── */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={STAFF_ROLES}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index                   element={<DashboardHome />} />
+              <Route path="members"          element={<Members />} />
+              <Route path="plans"            element={<MembershipPlans />} />
+              <Route path="trainers"         element={<Trainers />} />
+              <Route path="attendance"       element={<Attendance />} />
+              <Route path="equipment"        element={<EquipmentManagement />} />
+              <Route path="products"         element={<Products />} />
+              <Route path="offers"           element={<Offers />} />
+              <Route path="notifications"    element={<Notifications />} />
+              <Route path="reports"          element={<Reports />} />
+              <Route path="enquiries"        element={<Enquiries />} />
+              <Route path="profile"          element={<ProfileSettings />} />
+              <Route path="analytics"        element={<Analytics />} />
+            </Route>
 
-          {/* ── Gym Member Portal ────────────────────────────────────────── */}
-          <Route
-            path="/member"
-            element={
-              <ProtectedRoute allowedRoles={['gym_member']}>
-                <MemberLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index                  element={<MemberHome />} />
-            <Route path="profile"         element={<MemberProfile />} />
-            <Route path="schedule"        element={<MemberSchedule />} />
-            <Route path="progress"        element={<MemberProgress />} />
-            <Route path="payments"        element={<MemberPayments />} />
-            <Route path="shop"            element={<MemberShop />} />
-            <Route path="notifications"   element={<MemberNotifications />} />
-            <Route path="ai-coach"        element={<AICoach />} />
-          </Route>
+            {/* ── Gym Member Portal ────────────────────────────────────────── */}
+            <Route
+              path="/member"
+              element={
+                <ProtectedRoute allowedRoles={['gym_member']}>
+                  <MemberLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index                  element={<MemberHome />} />
+              <Route path="profile"         element={<MemberProfile />} />
+              <Route path="schedule"        element={<MemberSchedule />} />
+              <Route path="progress"        element={<MemberProgress />} />
+              <Route path="payments"        element={<MemberPayments />} />
+              <Route path="shop"            element={<MemberShop />} />
+              <Route path="notifications"   element={<MemberNotifications />} />
+              <Route path="ai-coach"        element={<AICoach />} />
+            </Route>
 
-          {/* ── Catch-all ────────────────────────────────────────────────── */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            {/* ── Catch-all ────────────────────────────────────────────────── */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
