@@ -103,39 +103,35 @@ The UI is inspired by leading fitness brands and modern SaaS admin panels, featu
 ## ⚡ Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm 9+
+- Node.js 18+ & npm 9+
+- Python 3.11+ (for Django backend)
+- Docker & Docker Compose (optional)
 
-### Installation
+### Quick Start with Docker
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/pallavi-dhadage/Gym-managemnet-system.git
+docker-compose up --build
+```
 
-# 2. Navigate into the project
-cd Gym-managemnet-system
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:8000/api/`
+- **Swagger Docs**: `http://localhost:8000/api/docs/`
 
-# 3. Install dependencies
+### Manual Installation
+
+```bash
+# 1. Start Frontend (React + Vite)
+cd frontend
 npm install
-
-# 4. Start the development server
 npm run dev
-```
 
-Open **http://localhost:5173** in your browser.
-
-### Build for Production
-
-```bash
-npm run build
-```
-
-Output goes to `dist/` — ready to deploy on Vercel, Netlify, or any static host.
-
-### Preview Production Build
-
-```bash
-npm run preview
+# 2. Start Backend (Django in another terminal)
+cd backend
+python -m venv venv
+source venv/bin/activate # (or venv\Scripts\activate on Windows)
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
 ```
 
 ---
@@ -143,35 +139,29 @@ npm run preview
 ## 📁 Project Structure
 
 ```
-src/
-├── main.jsx                    # React entry point
-├── App.jsx                     # Router + all route definitions
-├── index.css                   # Tailwind imports + custom utilities
+Gym-managemnet-system/
+├── backend/                    # Django API backend
+│   ├── api/                    # API endpoints & ninja routers
+│   ├── apps/                   # Core apps (members, billing, attendance)
+│   ├── gym_backend/            # Project configuration & settings
+│   ├── manage.py
+│   ├── requirements.txt
+│   └── Dockerfile
 │
-├── data/
-│   └── sampleData.js           # All mock data (members, trainers,
-│                                 payments, KPIs, charts, plans)
+├── frontend/                   # React 19 + Vite 8 frontend
+│   ├── src/
+│   │   ├── main.jsx            # React entry point
+│   │   ├── App.jsx             # Router + all route definitions
+│   │   ├── index.css           # Tailwind imports + custom utilities
+│   │   ├── context/            # Auth & global state
+│   │   ├── layouts/            # DashboardLayout & MemberLayout
+│   │   ├── pages/              # Landing, Auth, Dashboard, Member portal
+│   │   └── data/               # Sample data & mocks
+│   ├── package.json
+│   ├── vite.config.js
+│   └── Dockerfile
 │
-├── layouts/
-│   └── DashboardLayout.jsx     # Dashboard shell: collapsible sidebar,
-│                                 topbar, notifications dropdown
-│
-└── pages/
-    ├── LandingPage.jsx         # Full public landing page (7 sections)
-    │
-    ├── auth/
-    │   ├── LoginPage.jsx       # Role-based login with split panel
-    │   ├── RegisterPage.jsx    # Multi-role registration
-    │   └── ForgotPasswordPage.jsx
-    │
-    └── dashboard/
-        ├── DashboardHome.jsx   # KPIs, charts, tables, quick actions
-        ├── Members.jsx         # Member management module
-        ├── MembershipPlans.jsx # Plans & billing module
-        ├── Attendance.jsx      # Attendance tracking module
-        ├── Trainers.jsx        # Trainer management module
-        ├── Notifications.jsx   # Notification center
-        └── Reports.jsx         # Analytics & reports module
+└── docker-compose.yml          # Full-stack Docker orchestration
 ```
 
 ---
