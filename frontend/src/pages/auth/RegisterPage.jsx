@@ -21,6 +21,30 @@ const BG_IMAGES = [
   'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=1400&auto=format&fit=crop&q=80',
 ];
 
+// ── Stable Top-Level Input Component (Prevents focus loss on re-render) ─────────
+function InputField({ label, name, type = 'text', placeholder, icon: Icon, value, onChange, error }) {
+  return (
+    <div>
+      <label htmlFor={`reg-${name}`} className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
+      <div className="relative">
+        <Icon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+        <input
+          id={`reg-${name}`}
+          name={name}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`w-full bg-gray-900 border rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors ${
+            error ? 'border-red-500/60' : 'border-gray-700 focus:border-[#39FF14]/60'
+          }`}
+        />
+      </div>
+      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+    </div>
+  );
+}
+
 export default function RegisterPage() {
   const { register, currentUser } = useAuth();
   const navigate = useNavigate();
@@ -47,8 +71,8 @@ export default function RegisterPage() {
 
   const update = (k, v) => {
     setForm(p => ({ ...p, [k]: v }));
-    setFieldErrors(p => ({ ...p, [k]: '' }));
-    setError('');
+    if (fieldErrors[k]) setFieldErrors(p => ({ ...p, [k]: '' }));
+    if (error) setError('');
   };
 
   // ── Validation ─────────────────────────────────────────────────────────
@@ -110,26 +134,6 @@ export default function RegisterPage() {
   const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'][strength];
   const strengthColor = ['', 'bg-red-500', 'bg-yellow-500', 'bg-blue-400', 'bg-[#39FF14]'][strength];
 
-  const InputField = ({ label, name, type = 'text', placeholder, icon: Icon, children }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
-      <div className="relative">
-        <Icon size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-        {children || (
-          <input
-            type={type}
-            value={form[name]}
-            onChange={e => update(name, e.target.value)}
-            placeholder={placeholder}
-            className={`w-full bg-gray-900 border rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors ${
-              fieldErrors[name] ? 'border-red-500/60' : 'border-gray-700 focus:border-[#39FF14]/60'
-            }`}
-          />
-        )}
-      </div>
-      {fieldErrors[name] && <p className="text-xs text-red-400 mt-1">{fieldErrors[name]}</p>}
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-gray-950 flex">
@@ -234,17 +238,53 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <InputField label="Full Name" name="name" placeholder="John Smith" icon={User} />
-            <InputField label="Email Address" name="email" type="email" placeholder="you@gymforce.com" icon={Mail} />
-            <InputField label="Phone Number (optional)" name="phone" type="tel" placeholder="+1 555-0000" icon={Phone} />
-            <InputField label="Gym / Organisation Name" name="gym" placeholder="Iron Paradise Gym" icon={Building2} />
+            <InputField
+              label="Full Name"
+              name="name"
+              placeholder="John Smith"
+              icon={User}
+              value={form.name}
+              onChange={e => update('name', e.target.value)}
+              error={fieldErrors.name}
+            />
+            <InputField
+              label="Email Address"
+              name="email"
+              type="email"
+              placeholder="you@gymforce.com"
+              icon={Mail}
+              value={form.email}
+              onChange={e => update('email', e.target.value)}
+              error={fieldErrors.email}
+            />
+            <InputField
+              label="Phone Number (optional)"
+              name="phone"
+              type="tel"
+              placeholder="+1 555-0000"
+              icon={Phone}
+              value={form.phone}
+              onChange={e => update('phone', e.target.value)}
+              error={fieldErrors.phone}
+            />
+            <InputField
+              label="Gym / Organisation Name"
+              name="gym"
+              placeholder="Iron Paradise Gym"
+              icon={Building2}
+              value={form.gym}
+              onChange={e => update('gym', e.target.value)}
+              error={fieldErrors.gym}
+            />
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+              <label htmlFor="reg-password" className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
+                  id="reg-password"
+                  name="password"
                   type={showPass ? 'text' : 'password'}
                   value={form.password}
                   onChange={e => update('password', e.target.value)}
@@ -273,10 +313,12 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password</label>
+              <label htmlFor="reg-confirmPassword" className="block text-sm font-medium text-gray-300 mb-1.5">Confirm Password</label>
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
+                  id="reg-confirmPassword"
+                  name="confirmPassword"
                   type={showConfirm ? 'text' : 'password'}
                   value={form.confirmPassword}
                   onChange={e => update('confirmPassword', e.target.value)}
@@ -292,6 +334,7 @@ export default function RegisterPage() {
               </div>
               {fieldErrors.confirmPassword && <p className="text-xs text-red-400 mt-1">{fieldErrors.confirmPassword}</p>}
             </div>
+
 
             {/* Terms */}
             <label className="flex items-start gap-3 cursor-pointer select-none">

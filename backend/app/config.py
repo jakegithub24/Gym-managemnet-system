@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_DAYS: int = 7
 
-    # Database (defaults to local SQLite, or PostgreSQL via DATABASE_URL)
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./gymforce.db")
+    # PostgreSQL Database
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/postgres")
+
 
     # CORS Settings
     CORS_ORIGINS: List[str] = [

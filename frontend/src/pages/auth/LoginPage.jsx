@@ -226,13 +226,20 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Email address</label>
+              <label htmlFor="login-email" className="block text-sm font-medium text-gray-300 mb-1.5">Email address</label>
               <div className="relative">
-                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
+                  id="login-email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
                   value={email}
-                  onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: '' })); }}
+                  onChange={e => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(p => ({ ...p, email: '' }));
+                    if (error) setError('');
+                  }}
                   placeholder="you@gymforce.com"
                   className={`w-full bg-gray-900 border rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors ${
                     fieldErrors.email ? 'border-red-500/60 focus:border-red-500' : 'border-gray-700 focus:border-[#39FF14]/60'
@@ -244,13 +251,20 @@ export default function LoginPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
+              <label htmlFor="login-password" className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
               <div className="relative">
-                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
+                  id="login-password"
+                  name="password"
                   type={showPass ? 'text' : 'password'}
+                  autoComplete="current-password"
                   value={password}
-                  onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })); }}
+                  onChange={e => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors(p => ({ ...p, password: '' }));
+                    if (error) setError('');
+                  }}
                   placeholder="••••••••"
                   className={`w-full bg-gray-900 border rounded-xl pl-10 pr-10 py-3 text-sm text-white placeholder-gray-600 focus:outline-none transition-colors ${
                     fieldErrors.password ? 'border-red-500/60 focus:border-red-500' : 'border-gray-700 focus:border-[#39FF14]/60'
@@ -266,6 +280,7 @@ export default function LoginPage() {
               </div>
               {fieldErrors.password && <p className="text-xs text-red-400 mt-1">{fieldErrors.password}</p>}
             </div>
+
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
