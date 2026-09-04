@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   Home, User, Calendar, CreditCard, TrendingUp, Bell, LogOut,
@@ -23,10 +23,34 @@ export default function MemberLayout() {
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
 
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
   const COLOR = '#F59E0B';
   const initials = currentUser?.avatar || currentUser?.name?.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '??';
 
-  const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
+  const handleLogout = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setProfileOpen(false);
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="flex h-screen bg-gray-950 overflow-hidden">
@@ -88,7 +112,7 @@ export default function MemberLayout() {
             <p className="text-xs text-gray-600">Member ID: {currentUser?.memberProfile?.memberId || 'N/A'}</p>
             <p className="text-xs text-gray-600">Expires: {currentUser?.memberProfile?.expiryDate || 'N/A'}</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all">
+          <button onClick={handleLogout} className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer">
             <LogOut size={17} /> Sign Out
           </button>
         </div>
@@ -96,7 +120,7 @@ export default function MemberLayout() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-400 hover:text-white p-1.5 hover:bg-gray-800 rounded-lg"><Menu size={20} /></button>
             <div>
@@ -105,21 +129,36 @@ export default function MemberLayout() {
             </div>
           </div>
 
-          <div className="relative">
-            <button onClick={() => setProfileOpen(v => !v)} className="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded-xl transition-colors">
+          <div
+            className="relative"
+            ref={profileRef}
+            onMouseEnter={() => setProfileOpen(true)}
+            onMouseLeave={() => setProfileOpen(false)}
+          >
+            <button
+              type="button"
+              onClick={() => setProfileOpen(v => !v)}
+              className="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
+            >
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black" style={{ background: `${COLOR}25`, color: COLOR }}>{initials}</div>
               <ChevronDown size={13} className="text-gray-500 hidden sm:block" />
             </button>
             {profileOpen && (
-              <div className="absolute right-0 top-12 w-44 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
-                <div className="p-3 border-b border-gray-800">
-                  <p className="text-xs font-bold text-white truncate">{currentUser?.name}</p>
-                  <p className="text-xs" style={{ color: COLOR }}>Gym Member</p>
-                </div>
-                <div className="p-2">
-                  <button onClick={handleLogout} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex items-center gap-2">
-                    <LogOut size={13} /> Sign Out
-                  </button>
+              <div className="absolute right-0 top-full pt-1 w-48 z-50">
+                <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="p-3 border-b border-gray-800">
+                    <p className="text-xs font-bold text-white truncate">{currentUser?.name}</p>
+                    <p className="text-xs" style={{ color: COLOR }}>Gym Member</p>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-400/10 rounded-lg transition-colors flex items-center gap-2 cursor-pointer font-medium"
+                    >
+                      <LogOut size={13} /> Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -128,8 +167,6 @@ export default function MemberLayout() {
 
         <main className="flex-1 overflow-y-auto bg-gray-950 p-4 md:p-6"><Outlet /></main>
       </div>
-
-      {profileOpen && <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, CreditCard, Dumbbell,
@@ -41,6 +41,26 @@ export default function DashboardLayout() {
   const [notifOpen,   setNotifOpen]   = useState(false);
   const navigate = useNavigate();
 
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
   const role       = currentUser?.role || 'master_admin';
   const roleConfig = ROLE_CONFIG[role] || ROLE_CONFIG.master_admin;
   const RoleIcon   = ROLE_ICONS[role] || UserCheck;
@@ -51,7 +71,15 @@ export default function DashboardLayout() {
   const userName = currentUser?.name || currentUser?.full_name || 'User';
   const initials = currentUser?.avatar || userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'AU';
 
-  const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
+  const handleLogout = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setProfileOpen(false);
+    logout();
+    navigate('/login', { replace: true });
+  };
 
   // Group nav items by group label
   const groups = [...new Set(navItems.map(n => n.group))];
@@ -141,7 +169,7 @@ export default function DashboardLayout() {
 
       {/* ── Main ─────────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+        <header className="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-4 py-3 flex items-center gap-3 sticky top-0 z-30">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-400 hover:text-white p-1.5 hover:bg-gray-800 rounded-lg"><Menu size={20} /></button>
 
           <div className="flex-1 max-w-sm relative">
@@ -155,7 +183,7 @@ export default function DashboardLayout() {
 
           <div className="flex items-center gap-1 ml-auto">
             {/* Notifications bell */}
-            <div className="relative">
+            <div className="relative" ref={notifRef}>
               <button onClick={() => { setNotifOpen(v => !v); setProfileOpen(false); }} className="relative p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
                 <Bell size={18} />
                 {unreadNotifs > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />}
@@ -188,8 +216,17 @@ export default function DashboardLayout() {
             </div>
 
             {/* Profile dropdown */}
-            <div className="relative">
-              <button onClick={() => { setProfileOpen(v => !v); setNotifOpen(false); }} className="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded-xl transition-colors">
+            <div
+              className="relative"
+              ref={profileRef}
+              onMouseEnter={() => setProfileOpen(true)}
+              onMouseLeave={() => setProfileOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => { setProfileOpen(v => !v); setNotifOpen(false); }}
+                className="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded-xl transition-colors cursor-pointer"
+              >
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black flex-shrink-0" style={{ background: `${roleConfig?.color}25`, color: roleConfig?.color }}>{initials}</div>
                 <div className="hidden sm:block text-left">
                   <p className="text-xs font-semibold text-white leading-none">{currentUser?.name?.split(' ')[0]}</p>
@@ -198,25 +235,35 @@ export default function DashboardLayout() {
                 <ChevronDown size={13} className="text-gray-500 hidden sm:block" />
               </button>
               {profileOpen && (
-                <div className="absolute right-0 top-12 w-52 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
-                  <div className="p-4 border-b border-gray-800">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: `${roleConfig?.color}25`, color: roleConfig?.color }}>{initials}</div>
-                      <div>
-                        <p className="text-sm font-bold text-white">{currentUser?.name}</p>
-                        <p className="text-xs" style={{ color: roleConfig?.color }}>{roleConfig?.label}</p>
+                <div className="absolute right-0 top-full pt-1 w-52 z-50">
+                  <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="p-4 border-b border-gray-800">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black" style={{ background: `${roleConfig?.color}25`, color: roleConfig?.color }}>{initials}</div>
+                        <div>
+                          <p className="text-sm font-bold text-white">{currentUser?.name}</p>
+                          <p className="text-xs" style={{ color: roleConfig?.color }}>{roleConfig?.label}</p>
+                        </div>
                       </div>
+                      <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
-                  </div>
-                  <div className="p-2">
-                    <NavLink to="/dashboard/profile" onClick={() => setProfileOpen(false)} className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-                      <Settings size={13} /> Profile Settings
-                    </NavLink>
-                    <hr className="border-gray-800 my-1" />
-                    <button onClick={handleLogout} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors flex items-center gap-2">
-                      <LogOut size={13} /> Sign Out
-                    </button>
+                    <div className="p-2 space-y-1">
+                      <NavLink
+                        to="/dashboard/profile"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                      >
+                        <Settings size={13} /> Profile Settings
+                      </NavLink>
+                      <hr className="border-gray-800 my-1" />
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors flex items-center gap-2 cursor-pointer font-medium"
+                      >
+                        <LogOut size={13} /> Sign Out
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -226,8 +273,6 @@ export default function DashboardLayout() {
 
         <main className="flex-1 overflow-y-auto bg-gray-950 p-4 md:p-6"><Outlet /></main>
       </div>
-
-      {(profileOpen || notifOpen) && <div className="fixed inset-0 z-40" onClick={() => { setProfileOpen(false); setNotifOpen(false); }} />}
     </div>
   );
 }

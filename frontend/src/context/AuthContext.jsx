@@ -314,6 +314,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setCurrentUser(null);
     sessionStorage.removeItem('gymforce_user');
+    localStorage.removeItem('gymforce_user');
   }, []);
 
   // ── Enquiry Actions ───────────────────────────────────────────────────────
