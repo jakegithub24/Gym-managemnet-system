@@ -105,34 +105,28 @@ The UI is inspired by leading fitness brands and modern SaaS admin panels, featu
 ### Prerequisites
 - Node.js 18+ & npm 9+
 - Python 3.11+ (for Django backend)
-- Docker & Docker Compose (optional)
 
-### Quick Start with Docker
+### Setup & Running Locally
 
+#### 1. Frontend (React + Vite)
 ```bash
-docker-compose up --build
-```
-
-- **Frontend**: `http://localhost:5173`
-- **Backend API**: `http://localhost:8000/api/`
-- **Swagger Docs**: `http://localhost:8000/api/docs/`
-
-### Manual Installation
-
-```bash
-# 1. Start Frontend (React + Vite)
 cd frontend
 npm install
 npm run dev
+```
+Open **`http://localhost:5173`** in your browser.
 
-# 2. Start Backend (Django in another terminal)
+#### 2. Backend (Django)
+```bash
 cd backend
 python -m venv venv
-source venv/bin/activate # (or venv\Scripts\activate on Windows)
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
+- **Backend API**: `http://localhost:8000/api/`
+- **Swagger Docs**: `http://localhost:8000/api/docs/`
 
 ---
 
@@ -145,23 +139,19 @@ Gym-managemnet-system/
 │   ├── apps/                   # Core apps (members, billing, attendance)
 │   ├── gym_backend/            # Project configuration & settings
 │   ├── manage.py
-│   ├── requirements.txt
-│   └── Dockerfile
+│   └── requirements.txt
 │
-├── frontend/                   # React 19 + Vite 8 frontend
-│   ├── src/
-│   │   ├── main.jsx            # React entry point
-│   │   ├── App.jsx             # Router + all route definitions
-│   │   ├── index.css           # Tailwind imports + custom utilities
-│   │   ├── context/            # Auth & global state
-│   │   ├── layouts/            # DashboardLayout & MemberLayout
-│   │   ├── pages/              # Landing, Auth, Dashboard, Member portal
-│   │   └── data/               # Sample data & mocks
-│   ├── package.json
-│   ├── vite.config.js
-│   └── Dockerfile
-│
-└── docker-compose.yml          # Full-stack Docker orchestration
+└── frontend/                   # React 19 + Vite 8 frontend
+    ├── src/
+    │   ├── main.jsx            # React entry point
+    │   ├── App.jsx             # Router + all route definitions
+    │   ├── index.css           # Tailwind imports + custom utilities
+    │   ├── context/            # Auth & global state
+    │   ├── layouts/            # DashboardLayout & MemberLayout
+    │   ├── pages/              # Landing, Auth, Dashboard, Member portal
+    │   └── data/               # Sample data & mocks
+    ├── package.json
+    └── vite.config.js
 ```
 
 ---
