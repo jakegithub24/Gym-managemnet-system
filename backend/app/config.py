@@ -17,14 +17,34 @@ class Settings(BaseSettings):
     # Database (defaults to local SQLite, or PostgreSQL via DATABASE_URL)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./gymforce.db")
 
-    # CORS
+    # CORS Settings
     CORS_ORIGINS: List[str] = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "*",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ]
+    CORS_ALLOW_CREDENTIALS: bool = True
+    CORS_ALLOW_METHODS: List[str] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    CORS_ALLOW_HEADERS: List[str] = [
+        "Authorization",
+        "Content-Type",
+        "X-CSRF-Token",
+        "X-CSRFToken",
+        "X-XSRF-TOKEN",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+    ]
+    CORS_EXPOSE_HEADERS: List[str] = ["X-CSRF-Token", "Content-Disposition"]
+
+    # CSRF Protection Settings
+    CSRF_ENABLED: bool = True
+    CSRF_COOKIE_NAME: str = "csrftoken"
+    CSRF_HEADER_NAME: str = "X-CSRF-Token"
+    CSRF_COOKIE_SECURE: bool = False  # Set to True for HTTPS in production
+    CSRF_COOKIE_SAMESITE: str = "lax"
+    CSRF_COOKIE_MAX_AGE: int = 86400  # 24 hours
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -35,3 +55,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+

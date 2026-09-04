@@ -108,25 +108,28 @@ The UI is inspired by leading fitness brands and modern SaaS admin panels, featu
 
 ### Setup & Running Locally
 
-#### 1. Frontend (React + Vite)
+#### 1. Frontend (React + Vite — Port 3000)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open **`http://localhost:5173`** in your browser.
+Open **`http://localhost:3000`** in your browser.
 
-#### 2. Backend (FastAPI)
+#### 2. Backend (FastAPI — Port 8000)
 ```bash
 cd backend
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
 ```
-- **Backend API**: `http://localhost:8000/api/`
+- **Frontend App**: `http://localhost:3000`
+- **Backend API**: `http://localhost:8000/api`
 - **Interactive Swagger Docs**: `http://localhost:8000/api/docs`
 - **ReDoc Documentation**: `http://localhost:8000/api/redoc`
+- **Security & Protection**: Argon2id Hashing, CORS Credentials, Double-Submit CSRF Protection
+
 
 ---
 
